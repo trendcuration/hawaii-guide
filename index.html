@@ -527,8 +527,6 @@ async function loadAll(){
   if(res.ok && res.data?.length){ S.reservations = res.data; }
   else { await seedTable('reservations', DEF_RESERVATIONS); S.reservations = DEF_RESERVATIONS; }
 
-  // places always from embedded data
-  S.places = DEF_PLACES;
 
   renderAll();
   setStatus('✅ 동기화 완료','ok');
