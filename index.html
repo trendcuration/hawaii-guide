@@ -105,7 +105,11 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 .empty .icon{font-size:36px;margin-bottom:8px}
 
 /* ── SCHEDULE ── */
-.schedule-wrap{overflow-x:auto}
+.sched-img-wrap{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:6px;box-shadow:var(--shadow)}
+.sched-img-label{padding:10px 14px;font-size:12px;font-weight:700;color:var(--teal-d);background:var(--teal-bg);border-bottom:1px solid var(--teal-border)}
+.sched-img-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.sched-img{display:block;height:280px;width:auto;max-width:none}
+.sched-img-hint{padding:6px 14px;font-size:10px;color:var(--ink-3);background:#fafcfd;border-top:1px solid var(--line);text-align:center}
 .schedule{background:#fff;border:1px solid #e6edf2;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);min-width:480px}
 .schedule table{width:100%;border-collapse:collapse}
 .schedule th,.schedule td{padding:9px 8px;border-bottom:1px solid #edf3f6;text-align:left;font-size:12px;vertical-align:top}
@@ -280,7 +284,21 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
   <!-- SCHEDULE -->
   <section id="pane-schedule" class="section">
     <div class="pane-title">📅 여행 일정</div>
-    <div class="pane-sub">7/3 ~ 7/10 오아후 7박 8일 · 셀을 직접 클릭해 수정 후 동기화</div>
+    <div class="pane-sub">7/3 ~ 7/10 오아후 7박 8일</div>
+
+    <!-- 전체 일정표 이미지 -->
+    <div class="sched-img-wrap">
+      <div class="sched-img-label">📋 전체 일정 한눈에 보기</div>
+      <div class="sched-img-scroll">
+        <img src="https://raw.githubusercontent.com/trendcuration/hawaii-guide/main/schedule.png"
+          alt="전체 일정표" class="sched-img">
+      </div>
+      <div class="sched-img-hint">← 좌우로 스크롤해서 전체 확인</div>
+    </div>
+
+    <!-- 상세 편집 일정표 -->
+    <div class="pane-sub" style="margin-top:20px;font-size:13px;font-weight:700;color:var(--ink-2)">✏️ 상세 일정 편집</div>
+    <div class="pane-sub">셀을 직접 클릭해 수정 후 자동 저장</div>
     <div class="schedule-wrap"><div id="scheduleBox"></div></div>
   </section>
 
