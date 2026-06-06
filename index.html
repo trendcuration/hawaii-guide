@@ -451,34 +451,13 @@ async function loadAll(){
     api('reservations?order=sort_order.asc')
   ]);
 
-  // places
-  if(plc.ok && plc.data?.length){
-    S.places = {food:[],sights:[],fine:[],kids:[]};
-    plc.data.forEach(p=>{
-      const cat = p.category;
-      if(!S.places[cat]) return;
-      S.places[cat].push({
-        id: p.id,
-        category: p.category,
-        icon: p.icon,
-        name: p.name,
-        nameEn: p.name_en,
-        area: p.area,
-        lat: p.lat,
-        lon: p.lon,
-        price: p.price,
-        rating: p.rating,
-        ratingCnt: p.rating_cnt,
-        description: p.description,
-        mustOrder: p.must_order,
-        tip: p.tip,
-        tags: Array.isArray(p.tags) ? p.tags : [],
-        addr: p.addr,
-        mapUrl: p.map_url
-      });
-    });
-  } else {
-    // DB 비어있으면 기본 데이터 삽입 (upsert로 중복 방지)
+  // places — DB에서 읽기, 없으면 시딩 후 다시 읽기
+  let placesData = [];
+  if(plc.ok && Array.isArray(plc.data)){
+    placesData = plc.data;
+  }
+  if(!placesData.length){
+    // 비어있으면 기본 데이터 삽입
     const allPlaces = [
       ...DEF_PLACES.food.map(p=>({...p,category:'food'})),
       ...DEF_PLACES.sights.map(p=>({...p,category:'sights'})),
@@ -492,13 +471,40 @@ async function loadAll(){
       description: p.description||'', must_order: p.mustOrder||'',
       tip: p.tip||'', tags: p.tags||[], addr: p.addr||'', map_url: p.mapUrl||''
     }));
-    const {ok} = await api('places', {
+    await api('places', {
       method: 'POST',
       body: JSON.stringify(allPlaces),
       headers: { Prefer: 'resolution=ignore-duplicates' }
     });
-    if(ok) S.places = DEF_PLACES;
+    // 삽입 후 다시 읽기
+    const plc2 = await api('places?order=created_at.asc');
+    placesData = (plc2.ok && Array.isArray(plc2.data)) ? plc2.data : [];
   }
+  // DB 데이터 → S.places 매핑
+  S.places = {food:[],sights:[],fine:[],kids:[]};
+  placesData.forEach(p=>{
+    const cat = p.category;
+    if(!S.places[cat]) return;
+    S.places[cat].push({
+      id: p.id,
+      category: p.category,
+      icon: p.icon,
+      name: p.name,
+      nameEn: p.name_en,
+      area: p.area,
+      lat: p.lat,
+      lon: p.lon,
+      price: p.price,
+      rating: p.rating,
+      ratingCnt: p.rating_cnt,
+      description: p.description,
+      mustOrder: p.must_order,
+      tip: p.tip,
+      tags: Array.isArray(p.tags) ? p.tags : [],
+      addr: p.addr,
+      mapUrl: p.map_url
+    });
+  });
 
   // schedules
   if(sch.ok && sch.data?.length){
