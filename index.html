@@ -98,6 +98,9 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 .btn{display:inline-flex;align-items:center;gap:3px;border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:none;text-decoration:none;transition:background .15s}
 .btn-map{background:#eef6f8;color:#2b6e7a}.btn-map:hover{background:#e2eff2}
 .btn-edit{background:#eef2f5;color:#3d4a57}.btn-edit:hover{background:#e4eaf0}
+.btn-review{background:#fff8e1;color:#b45309}.btn-review:hover{background:#fef3c7}
+.gmap-find-btn{display:inline-flex;align-items:center;gap:5px;background:var(--teal-bg);color:var(--teal-d);border:1.5px solid var(--teal-border);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;text-decoration:none;transition:background .15s}
+.gmap-find-btn:hover{background:#cde8ec}
 .empty{text-align:center;padding:44px 18px;color:var(--ink-3)}
 .empty .icon{font-size:36px;margin-bottom:8px}
 
@@ -503,7 +506,8 @@ async function loadAll(){
       tip: p.tip,
       tags: Array.isArray(p.tags) ? p.tags : [],
       addr: p.addr,
-      mapUrl: p.map_url
+      mapUrl: p.map_url,
+      reviewUrl: p.review_url
     });
   });
 
@@ -647,6 +651,7 @@ function renderPlaces(cat){
         <div class="card-addr">${esc(p.addr||'')}</div>
         <div class="acts">
           <button class="btn btn-edit" data-cat="${cat}" data-id="${p.id}">✏️ 수정</button>
+          ${p.reviewUrl?`<a class="btn btn-review" href="${esc(p.reviewUrl)}" target="_blank" rel="noopener">⭐ 리뷰</a>`:''}
           ${p.mapUrl?`<a class="btn btn-map" href="${esc(p.mapUrl)}" target="_blank" rel="noopener">📍 지도</a>`:''}
         </div>
       </div>
@@ -1033,13 +1038,19 @@ function openPlaceModal(cat, id){
       <div class="fg"><label class="fl">위도 (lat)</label><input class="fi" id="f_lat" value="${p.lat||''}" placeholder="21.2806"></div>
       <div class="fg"><label class="fl">경도 (lon)</label><input class="fi" id="f_lon" value="${p.lon||''}" placeholder="-157.8307"></div>
     </div>
-    <p class="hint-text">💡 구글맵에서 장소 클릭 → 하단 좌표 복사</p>
+    <div style="margin-bottom:10px">
+      <a class="gmap-find-btn" id="gmapFindBtn" href="https://maps.google.com/maps/search/${encodeURIComponent((p.name||'')+(p.addr?' '+p.addr:''))}" target="_blank" rel="noopener">
+        🗺️ 구글맵에서 좌표 찾기 →
+      </a>
+      <div style="font-size:10px;color:var(--ink-3);margin-top:4px">구글맵에서 장소 클릭 → 하단 좌표 복사 → 위도/경도에 붙여넣기</div>
+    </div>
     <div class="fg"><label class="fl">설명</label><textarea class="fi" id="f_desc" rows="3">${esc(p.description||p.desc||'')}</textarea></div>
     <div class="fg"><label class="fl">Must Order / 볼거리</label><input class="fi" id="f_must" value="${esc(p.mustOrder||'')}"></div>
     <div class="fg"><label class="fl">팁</label><input class="fi" id="f_tip" value="${esc(p.tip||'')}"></div>
     <div class="fg"><label class="fl">태그 (쉼표 구분)</label><input class="fi" id="f_tags" value="${esc((p.tags||[]).join(', '))}"></div>
     <div class="fg"><label class="fl">주소</label><input class="fi" id="f_addr" value="${esc(p.addr||'')}"></div>
-    <div class="fg"><label class="fl">구글지도 URL</label><input class="fi" id="f_mapUrl" value="${esc(p.mapUrl||'')}"></div>`,
+    <div class="fg"><label class="fl">구글지도 URL</label><input class="fi" id="f_mapUrl" value="${esc(p.mapUrl||'')}"></div>
+    <div class="fg"><label class="fl">리뷰 링크 (선택)</label><input class="fi" id="f_reviewUrl" value="${esc(p.reviewUrl||p.review_url||'')}" placeholder="https://..."></div>`,
     `${isEdit?`<button class="btn-d" id="btnDelPlace">삭제</button>`:''}
      <button class="btn-s" onclick="closeModal()">취소</button>
      <button class="btn-p" id="btnSaveModal">저장</button>`);
@@ -1062,7 +1073,8 @@ function openPlaceModal(cat, id){
       tip: document.getElementById('f_tip').value.trim(),
       tags: document.getElementById('f_tags').value.split(',').map(s=>s.trim()).filter(Boolean),
       addr: document.getElementById('f_addr').value.trim(),
-      map_url: document.getElementById('f_mapUrl').value.trim()
+      map_url: document.getElementById('f_mapUrl').value.trim(),
+      review_url: document.getElementById('f_reviewUrl').value.trim()
     };
     if(!updated.name){alert('장소명을 입력하세요');return;}
     setStatus('저장 중...','spin');
