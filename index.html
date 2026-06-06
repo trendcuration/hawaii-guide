@@ -128,7 +128,26 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 .bgt-table th{background:#f1f7f9;color:#334155;padding:8px;text-align:left;border-bottom:2px solid #dce6ec;font-weight:700}
 .bgt-table td{padding:7px 8px;border-bottom:1px solid #edf3f6}
 .bgt-table .num{text-align:right}
-.bgt-total td{font-weight:800;background:#f0f7f8 !important;border-top:2px solid #cfe3e8}
+.bgt-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.bgt-item{background:#fff;border:1px solid #e0eaf4;border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.bgt-item-left{flex:1;min-width:0}
+.bgt-item-name{margin-bottom:5px}
+.bgt-name-inp{width:100%;border:none;font-size:14px;font-weight:700;color:var(--ink);background:transparent;padding:0;outline:none;font-family:inherit}
+.bgt-name-inp:focus{border-bottom:1.5px solid var(--teal)}
+.bgt-item-meta{display:flex;gap:6px;flex-wrap:wrap}
+.bgt-meta-inp{border:none;font-size:11px;color:var(--ink-3);background:#f4f8fc;border-radius:6px;padding:3px 7px;outline:none;font-family:inherit;width:auto;max-width:90px}
+.bgt-meta-inp:focus{background:#e6f4f6;color:var(--teal-d)}
+.bgt-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.bgt-item-amount{display:flex;align-items:center;gap:5px}
+.bgt-amt-inp{width:90px;border:none;font-size:16px;font-weight:800;color:var(--ink);text-align:right;background:transparent;padding:0;outline:none;font-family:inherit}
+.bgt-amt-inp:focus{border-bottom:1.5px solid var(--teal)}
+.bgt-item-sub{font-size:11px;color:var(--ink-3)}
+.bgt-del-btn{background:none;border:none;color:#c8d0d8;font-size:11px;cursor:pointer;padding:0;font-family:inherit;font-weight:700}
+.bgt-del-btn:hover{color:#c53030}
+.bgt-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:12px 14px;background:var(--teal-bg);border-radius:10px;border:1px solid var(--teal-border)}
+.bgt-footer span{font-size:13px;font-weight:700;color:var(--teal-d)}
+.bgt-total-krw{font-size:18px;font-weight:800;color:var(--ink);text-align:right}
+.bgt-total-usd{font-size:11px;color:var(--ink-3);text-align:right}
 .cur-toggle{font-size:10px;font-weight:700;padding:3px 7px;border-radius:6px;border:1.5px solid #b0cdd2;background:#eef6f8;color:#2b6e7a;cursor:pointer;white-space:nowrap;transition:all .15s}
 .cur-toggle.usd{background:#fff3e0;color:#b45309;border-color:#f5c77e}
 .cur-btn{flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid #c8d8e4;background:#fff;color:#475569;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
@@ -740,100 +759,89 @@ function renderBudget(){
       <div>
         <div class="lbl">총 예산</div>
         <div class="amt">${fmtKRW(totalKRW)}원</div>
-        <div class="sub" style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="sub" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:3px">
           <span>≈ $${fmtUSD(totalUSD)}</span>
           <span>인당 약 ${fmtKRW(Math.round(totalKRW/3))}원 (3가정)</span>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <div class="fx-badge" id="fxBadge">환율 $1 = ₩${fmtKRW(FX.rate)}${FX.updatedAt?' · '+FX.updatedAt:' (기본값)'}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="fx-badge">환율 $1 = ₩${fmtKRW(FX.rate)}${FX.updatedAt?' · '+FX.updatedAt:''}</div>
         <button class="btn btn-map" id="btnAddBudget">＋ 항목 추가</button>
       </div>
     </div>
-    <div class="bgt-wrap"><table class="bgt-table">
-      <thead>
-        <tr>
-          <th>항목</th>
-          <th class="num">금액</th>
-          <th class="num" style="width:46px">통화</th>
-          <th class="num" style="width:110px">원화 환산</th>
-          <th>지불수단</th>
-          <th>비고</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        ${items.map(i=>{
-          const isUSD = i.currency === 'USD';
-          const krw = Number(i.amount)||0;
-          const usd = krwToUsd(krw);
-          const dispAmt  = isUSD ? fmtUSD(usd)   : fmtKRW(krw);
-          const dispKrw  = isUSD ? fmtKRW(krw)   : '';
-          return `<tr data-id="${esc(i.id)}">
-            <td><input class="bgt-inp" data-f="name" value="${esc(i.name)}"></td>
-            <td class="num"><input class="bgt-inp bgt-num" data-f="amt_display"
-              value="${esc(dispAmt)}"
-              style="text-align:right"
-              inputmode="decimal"
-              onfocus="this.value=this.value.replace(/[,$₩ ]/g,'')"
-              onblur="onBudgetAmtBlur(this)"></td>
-            <td class="num">
-              <button class="cur-toggle ${isUSD?'usd':''}" data-id="${esc(i.id)}" title="클릭해서 통화 전환">
-                ${isUSD?'USD':'KRW'}
-              </button>
-            </td>
-            <td class="num bgt-krw-col" style="font-size:11px;color:#6b7c8d">
-              ${isUSD ? fmtKRW(krw)+'원' : ''}
-            </td>
-            <td><input class="bgt-inp" data-f="method" value="${esc(i.method||'')}"></td>
-            <td><input class="bgt-inp" data-f="memo" value="${esc(i.memo||'')}"></td>
-            <td><button class="btn btn-d" data-del="${esc(i.id)}">삭제</button></td>
-          </tr>`;
-        }).join('')}
-        <tr class="bgt-total">
-          <td colspan="2"><strong>합계</strong></td>
-          <td></td>
-          <td class="num"><strong>${fmtKRW(totalKRW)}원</strong></td>
-          <td colspan="3" class="num" style="font-size:11px;color:#6b7c8d">≈ $${fmtUSD(totalUSD)}</td>
-        </tr>
-      </tbody>
-    </table></div>`;
 
-  // field edits (name, method, memo)
-  card.querySelectorAll('.bgt-inp:not(.bgt-num)').forEach(inp=>inp.addEventListener('change', e=>onBudgetTextField(e.target)));
-  // currency toggle
-  card.querySelectorAll('.cur-toggle').forEach(btn=>btn.addEventListener('click', ()=>toggleCurrency(btn.dataset.id)));
-  card.querySelector('#btnAddBudget').addEventListener('click', openBudgetModal);
+    <div class="bgt-list" id="bgtList">
+      ${items.map(i=>{
+        const isUSD = i.currency === 'USD';
+        const krw = Number(i.amount)||0;
+        const usd = krwToUsd(krw);
+        const dispAmt = isUSD ? '$'+fmtUSD(usd) : fmtKRW(krw)+'원';
+        const subAmt  = isUSD ? fmtKRW(krw)+'원' : '$'+fmtUSD(usd);
+        return `<div class="bgt-item" data-id="${esc(i.id)}">
+          <div class="bgt-item-left">
+            <div class="bgt-item-name">
+              <input class="bgt-inp bgt-name-inp" data-f="name" value="${esc(i.name)}" placeholder="항목명">
+            </div>
+            <div class="bgt-item-meta">
+              <input class="bgt-inp bgt-meta-inp" data-f="method" value="${esc(i.method||'')}" placeholder="지불수단">
+              <input class="bgt-inp bgt-meta-inp" data-f="memo" value="${esc(i.memo||'')}" placeholder="비고">
+            </div>
+          </div>
+          <div class="bgt-item-right">
+            <div class="bgt-item-amount">
+              <input class="bgt-inp bgt-amt-inp" data-f="amt_display"
+                value="${esc(isUSD ? fmtUSD(usd) : fmtKRW(krw))}"
+                inputmode="decimal"
+                onfocus="this.value=this.value.replace(/[,$₩ ]/g,'')"
+                onblur="onBudgetAmtBlur(this)">
+              <button class="cur-toggle ${isUSD?'usd':''}" data-id="${esc(i.id)}">${isUSD?'USD':'KRW'}</button>
+            </div>
+            <div class="bgt-item-sub">${subAmt}</div>
+            <button class="bgt-del-btn" data-del="${esc(i.id)}">삭제</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="bgt-footer">
+      <span>합계</span>
+      <div>
+        <div class="bgt-total-krw">${fmtKRW(totalKRW)}원</div>
+        <div class="bgt-total-usd">≈ $${fmtUSD(totalUSD)}</div>
+      </div>
+    </div>`;
+
+  card.querySelectorAll('.bgt-inp:not(.bgt-amt-inp)').forEach(inp=>inp.addEventListener('change',e=>onBudgetTextField(e.target)));
+  card.querySelectorAll('.cur-toggle').forEach(btn=>btn.addEventListener('click',()=>toggleCurrency(btn.dataset.id)));
+  card.querySelector('#btnAddBudget').addEventListener('click',openBudgetModal);
   card.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteBudget(b.dataset.del)));
 }
 
 // called on blur of amount input — parse, convert to KRW, save
 async function onBudgetAmtBlur(inp){
-  const tr = inp.closest('tr');
-  const id = tr?.dataset?.id;
+  const item_el = inp.closest('.bgt-item');
+  const id = item_el?.dataset?.id;
   const item = S.budget.find(i=>String(i.id)===String(id));
   if(!item) return;
   const raw = parseNum(inp.value);
   if(isNaN(raw)) return;
   const isUSD = item.currency === 'USD';
-  item.amount = isUSD ? usdToKrw(raw) : raw;         // always store KRW
-  // reformat display
+  item.amount = isUSD ? usdToKrw(raw) : raw;
   inp.value = isUSD ? fmtUSD(raw) : fmtKRW(raw);
-  // update sibling krw col
-  const krwCol = tr.querySelector('.bgt-krw-col');
-  if(krwCol) krwCol.textContent = isUSD ? fmtKRW(item.amount)+'원' : '';
+  // 환산액 업데이트
+  const subEl = item_el.querySelector('.bgt-item-sub');
+  if(subEl) subEl.textContent = isUSD ? fmtKRW(item.amount)+'원' : '$'+fmtUSD(krwToUsd(item.amount));
   setStatus('저장 중...','spin');
   const {ok} = await api('budget?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({amount:item.amount,currency:item.currency||'KRW'})});
-  // update total row
+  // 합계 업데이트
   const totalKRW = S.budget.reduce((s,x)=>s+(Number(x.amount)||0),0);
-  const totalEl = document.querySelector('.bgt-total td:nth-child(4)');
-  if(totalEl) totalEl.innerHTML = `<strong>${fmtKRW(totalKRW)}원</strong>`;
-  const totalUsdEl = document.querySelector('.bgt-total td:nth-child(5)');
-  if(totalUsdEl) totalUsdEl.textContent = `≈ $${fmtUSD(krwToUsd(totalKRW))}`;
-  // update summary
+  const totalKrwEl = document.querySelector('.bgt-total-krw');
+  const totalUsdEl = document.querySelector('.bgt-total-usd');
   const amtEl = document.querySelector('.budget-top .amt');
+  if(totalKrwEl) totalKrwEl.textContent = fmtKRW(totalKRW)+'원';
+  if(totalUsdEl) totalUsdEl.textContent = '≈ $'+fmtUSD(krwToUsd(totalKRW));
   if(amtEl) amtEl.textContent = fmtKRW(totalKRW)+'원';
-  setStatus(ok?'💾 저장됨':'❌ 저장 실패', ok?'ok':'err');
+  setStatus(ok?'💾 저장됨':'❌ 저장 실패',ok?'ok':'err');
 }
 // make it globally callable (inline onblur)
 window.onBudgetAmtBlur = onBudgetAmtBlur;
