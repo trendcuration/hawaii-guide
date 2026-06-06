@@ -456,10 +456,7 @@ async function loadAll(){
   if(plc.ok && Array.isArray(plc.data)){
     placesData = plc.data;
   }
-  // 디버그: 상태 표시
-  const dbgMsg = `plc.ok=${plc.ok}, data길이=${placesData.length}, error=${plc.error||'없음'}`;
-  setStatus('🔍 '+dbgMsg, 'spin');
-  await new Promise(r=>setTimeout(r,3000)); // 3초 표시
+  if(!placesData.length){
     // 비어있으면 기본 데이터 삽입
     const allPlaces = [
       ...DEF_PLACES.food.map(p=>({...p,category:'food'})),
@@ -701,7 +698,10 @@ let FX = { rate: 1450, updatedAt: null };   // fallback rate
 
 async function fetchRate(){
   try {
-    const r = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), 3000); // 3초 타임아웃
+    const r = await fetch('https://api.exchangerate-api.com/v4/latest/USD', {signal: controller.signal});
+    clearTimeout(timer);
     if(!r.ok) throw new Error('rate fetch failed');
     const d = await r.json();
     const krw = d.rates?.KRW;
@@ -709,7 +709,7 @@ async function fetchRate(){
       FX.rate = Math.round(krw);
       FX.updatedAt = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
     }
-  } catch(e){ /* keep fallback */ }
+  } catch(e){ /* 타임아웃 또는 실패 시 기본값 1450 사용 */ }
 }
 
 // ─── number formatting helpers ───────────────
