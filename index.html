@@ -230,6 +230,52 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 .cl-add-row{display:flex;align-items:center;gap:8px;background:none;border:1.5px dashed #d0dde8;border-radius:10px;padding:9px 12px;width:100%;cursor:pointer;font-size:12px;color:var(--ink-3);font-family:inherit;transition:all .18s;margin-top:4px}
 .cl-add-row:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
 
+/* ── LEDGER ── */
+.ldg-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.ldg-sum-card{background:#fff;border-radius:12px;padding:14px;box-shadow:var(--shadow);border:1px solid #e0eaf4;text-align:center}
+.ldg-sum-label{font-size:10px;font-weight:700;color:var(--ink-3);margin-bottom:4px;letter-spacing:.05em;text-transform:uppercase}
+.ldg-sum-amount{font-size:20px;font-weight:800;line-height:1.1}
+.ldg-sum-krw{font-size:10px;color:var(--ink-3);margin-top:3px}
+.ldg-sum-card.total .ldg-sum-amount{color:var(--ink)}
+.ldg-sum-card.spent .ldg-sum-amount{color:#e06050}
+.ldg-sum-card.remain .ldg-sum-amount{color:#22c55e}
+.ldg-sum-card.remain.warn .ldg-sum-amount{color:#f59e0b}
+.ldg-sum-card.remain.over .ldg-sum-amount{color:#ef4444}
+
+.ldg-progress{background:#fff;border-radius:12px;padding:14px;box-shadow:var(--shadow);border:1px solid #e0eaf4;margin-bottom:16px}
+.ldg-prog-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.ldg-prog-bar{height:10px;background:#f0f4f8;border-radius:99px;overflow:hidden}
+.ldg-prog-fill{height:100%;border-radius:99px;transition:width .4s;background:linear-gradient(90deg,#22c55e,#84cc16)}
+.ldg-prog-fill.warn{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.ldg-prog-fill.over{background:linear-gradient(90deg,#ef4444,#f87171)}
+
+.ldg-date-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+
+.ldg-day{background:#fff;border-radius:12px;box-shadow:var(--shadow);border:1px solid #e0eaf4;margin-bottom:10px;overflow:hidden}
+.ldg-day-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#f8fbfc;border-bottom:1px solid #edf3f6;cursor:pointer}
+.ldg-day-date{font-weight:700;font-size:14px;color:var(--teal-d)}
+.ldg-day-total{font-size:13px;font-weight:800;color:var(--ink)}
+.ldg-day-body{padding:8px 6px 10px}
+.ldg-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;transition:background .15s}
+.ldg-item:hover{background:#f4f8fc}
+.ldg-item-cat{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:var(--teal-bg)}
+.ldg-item-body{flex:1;min-width:0}
+.ldg-item-desc{font-size:13px;font-weight:600;color:var(--ink)}
+.ldg-item-meta{font-size:10px;color:var(--ink-3);margin-top:1px}
+.ldg-item-amount{text-align:right;flex-shrink:0}
+.ldg-item-usd{font-size:15px;font-weight:800;color:var(--ink)}
+.ldg-item-krw{font-size:10px;color:var(--ink-3)}
+.ldg-item-del{background:none;border:none;color:#dde3e8;font-size:13px;cursor:pointer;padding:0 4px;flex-shrink:0}
+.ldg-item-del:hover{color:#ef4444}
+.ldg-add-btn{display:flex;align-items:center;gap:6px;width:100%;padding:8px 10px;background:none;border:1.5px dashed #d0dde8;border-radius:8px;color:var(--ink-3);font-size:12px;font-family:inherit;cursor:pointer;margin-top:4px;transition:all .18s}
+.ldg-add-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+
+.ldg-empty{text-align:center;padding:30px;color:var(--ink-3);font-size:13px}
+
+/* category color dots */
+.cat-식사{background:#fff3e0}.cat-교통{background:#e3f2fd}.cat-쇼핑{background:#f3e5f5}
+.cat-관광{background:#e8f5e9}.cat-숙소{background:#fce4ec}.cat-기타{background:#f0f4f8}
+
 .footer{padding:18px;text-align:center;font-size:11px;color:var(--ink-3)}
 @media(max-width:480px){.grid{grid-template-columns:1fr}.frow{grid-template-columns:1fr}}
 </style>
@@ -257,6 +303,7 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
     <button class="tab" data-tab="memo">📝 메모</button>
     <button class="tab" data-tab="budget">💰 예산</button>
     <button class="tab" data-tab="checklist">🧳 준비물</button>
+    <button class="tab" data-tab="ledger">📒 가계부</button>
   </div>
   <div class="status">
     <div class="status-left">
@@ -380,6 +427,17 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
     <!-- 아이템 목록 -->
     <div id="clList"></div>
   </section>
+
+  <!-- LEDGER -->
+  <section id="pane-ledger" class="section">
+    <div class="pane-title">📒 여행 가계부</div>
+    <div class="pane-sub">날짜별 지출 기록 · 달러($) 기준</div>
+    <div id="ledgerSummary"></div>
+    <div class="ldg-date-filter" id="ldgDateFilter"></div>
+    <div id="ledgerList"></div>
+  </section>
+
+</main>
 
 <button class="fab" id="btnFab" aria-label="추가">＋</button>
 
@@ -1373,6 +1431,167 @@ window.deleteCheckItem = async(id)=>{
   const {ok} = await api('checklist?id=eq.'+encodeURIComponent(id),{method:'DELETE'});
   if(ok){ CL.items = CL.items.filter(i=>i.id!==id); renderChecklist(); }
 };
+
+// ═══════════════════════════════════════════
+// LEDGER (여행 가계부)
+// ═══════════════════════════════════════════
+const TRIP_DAYS = [
+  {date:'2026-07-03',label:'7/3 (금) 출발'},
+  {date:'2026-07-04',label:'7/4 (토)'},
+  {date:'2026-07-05',label:'7/5 (일) 스냅촬영'},
+  {date:'2026-07-06',label:'7/6 (월)'},
+  {date:'2026-07-07',label:'7/7 (화)'},
+  {date:'2026-07-08',label:'7/8 (수)'},
+  {date:'2026-07-09',label:'7/9 (목) 돌잔치'},
+  {date:'2026-07-10',label:'7/10 (금) 귀국'},
+];
+const LDG_CATS = [
+  {key:'식사',icon:'🍽️'},{key:'교통',icon:'🚗'},
+  {key:'쇼핑',icon:'🛍️'},{key:'관광',icon:'🎡'},
+  {key:'숙소',icon:'🏨'},{key:'기타',icon:'💳'},
+];
+const BUDGET_USD = 4549.94;
+let LDG = {items:[], filterDate:'all'};
+
+async function loadLedger(){
+  const {ok,data} = await api('ledger?order=date.asc,created_at.asc');
+  LDG.items = (ok && data) ? data : [];
+  renderLedger();
+}
+
+function fmtD(n){ return (Math.round((Number(n)||0)*100)/100).toFixed(2); }
+function fmtDK(usd){ return '≈ ₩'+fmtKRW(Math.round((Number(usd)||0)*FX.rate)); }
+
+function renderLedger(){
+  const spentUSD = LDG.items.reduce((s,i)=>s+(Number(i.amount_usd)||0),0);
+  const remainUSD = BUDGET_USD - spentUSD;
+  const pct = Math.min(Math.round(spentUSD/BUDGET_USD*100),100);
+  const overBudget = remainUSD < 0;
+  const warnBudget = !overBudget && remainUSD < BUDGET_USD*0.2;
+
+  const sumEl = document.getElementById('ledgerSummary');
+  if(!sumEl) return;
+  sumEl.innerHTML = `
+    <div class="ldg-summary">
+      <div class="ldg-sum-card total">
+        <div class="ldg-sum-label">총 예산</div>
+        <div class="ldg-sum-amount">$${fmtD(BUDGET_USD)}</div>
+        <div class="ldg-sum-krw">${fmtDK(BUDGET_USD)}</div>
+      </div>
+      <div class="ldg-sum-card spent">
+        <div class="ldg-sum-label">사용 금액</div>
+        <div class="ldg-sum-amount">$${fmtD(spentUSD)}</div>
+        <div class="ldg-sum-krw">${fmtDK(spentUSD)}</div>
+      </div>
+      <div class="ldg-sum-card remain${overBudget?' over':warnBudget?' warn':''}">
+        <div class="ldg-sum-label">잔액</div>
+        <div class="ldg-sum-amount">${overBudget?'-':''}$${fmtD(Math.abs(remainUSD))}</div>
+        <div class="ldg-sum-krw">${fmtDK(Math.abs(remainUSD))}</div>
+      </div>
+    </div>
+    <div class="ldg-progress">
+      <div class="ldg-prog-row">
+        <span style="font-weight:700;font-size:12px">사용률 ${pct}%</span>
+        <span style="font-size:11px;color:var(--ink-3)">$${fmtD(spentUSD)} / $${fmtD(BUDGET_USD)}</span>
+      </div>
+      <div class="ldg-prog-bar">
+        <div class="ldg-prog-fill${overBudget?' over':warnBudget?' warn':''}" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+
+  // 날짜 필터
+  document.getElementById('ldgDateFilter').innerHTML =
+    `<div class="chip${LDG.filterDate==='all'?' on':''}" onclick="ldgFilter('all',this)">전체</div>`+
+    TRIP_DAYS.map(d=>`<div class="chip${LDG.filterDate===d.date?' on':''}" onclick="ldgFilter('${d.date}',this)">${d.label.split(' ')[0]}</div>`).join('');
+
+  // 날짜별 리스트
+  const days = LDG.filterDate==='all' ? TRIP_DAYS : TRIP_DAYS.filter(d=>d.date===LDG.filterDate);
+  let html=''; let hasAny=false;
+  days.forEach(day=>{
+    const items = LDG.items.filter(i=>i.date===day.date);
+    const dayTotal = items.reduce((s,i)=>s+(Number(i.amount_usd)||0),0);
+    if(LDG.filterDate==='all' && !items.length) return;
+    hasAny=true;
+    html+=`<div class="ldg-day">
+      <div class="ldg-day-header">
+        <span class="ldg-day-date">${day.label}</span>
+        <span class="ldg-day-total">$${fmtD(dayTotal)}</span>
+      </div>
+      <div class="ldg-day-body">
+        ${items.map(item=>{
+          const cat=LDG_CATS.find(c=>c.key===item.category)||{icon:'💳',key:'기타'};
+          return `<div class="ldg-item">
+            <div class="ldg-item-cat cat-${cat.key}">${cat.icon}</div>
+            <div class="ldg-item-body">
+              <div class="ldg-item-desc">${esc(item.description||'')}</div>
+              <div class="ldg-item-meta">${cat.key}${item.payer?' · '+esc(item.payer):''}</div>
+            </div>
+            <div class="ldg-item-amount">
+              <div class="ldg-item-usd">$${fmtD(item.amount_usd)}</div>
+              <div class="ldg-item-krw">${fmtDK(item.amount_usd)}</div>
+            </div>
+            <button class="ldg-item-del" onclick="deleteLedger('${item.id}')">✕</button>
+          </div>`;
+        }).join('')}
+        <button class="ldg-add-btn" onclick="openLedgerModal('${day.date}','${day.label}')">＋ 지출 추가</button>
+      </div>
+    </div>`;
+  });
+  if(!hasAny) html=`<div class="ldg-empty">📭 기록된 지출이 없습니다.<br>날짜별 ＋ 버튼으로 추가하세요.</div>`;
+  document.getElementById('ledgerList').innerHTML=html;
+}
+
+window.ldgFilter=(date,chip)=>{
+  LDG.filterDate=date;
+  document.querySelectorAll('#ldgDateFilter .chip').forEach(c=>c.classList.remove('on'));
+  chip.classList.add('on');
+  renderLedger();
+};
+
+window.openLedgerModal=(date,dayLabel)=>{
+  const catOpts=LDG_CATS.map(c=>`<option value="${c.key}">${c.icon} ${c.key}</option>`).join('');
+  const dayOpts=TRIP_DAYS.map(d=>`<option value="${d.date}" ${d.date===date?'selected':''}>${d.label}</option>`).join('');
+  const payerOpts=['미아(주안)','동탄(주아)','공통'].map(p=>`<option value="${p}">${p}</option>`).join('');
+  openModal('지출 추가',`
+    <div class="fg"><label class="fl">날짜</label><select class="fi" id="ld_date">${dayOpts}</select></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">카테고리</label><select class="fi" id="ld_cat">${catOpts}</select></div>
+      <div class="fg"><label class="fl">지불자</label><select class="fi" id="ld_payer">${payerOpts}</select></div>
+    </div>
+    <div class="fg"><label class="fl">내용 *</label><input class="fi" id="ld_desc" placeholder="예: 마루카메 우동 저녁식사"></div>
+    <div class="fg">
+      <label class="fl">금액 ($)</label>
+      <input class="fi" id="ld_usd" type="text" inputmode="decimal" placeholder="0.00">
+      <div id="ld_convert" style="font-size:11px;color:var(--teal-d);margin-top:4px;min-height:16px"></div>
+    </div>`,
+    `<button class="btn-s" onclick="closeModal()">취소</button><button class="btn-p" id="btnSaveModal">저장</button>`);
+  document.getElementById('ld_usd').addEventListener('input',()=>{
+    const v=parseNum(document.getElementById('ld_usd').value);
+    document.getElementById('ld_convert').textContent=v?`≈ ₩${fmtKRW(Math.round(v*FX.rate))}`:'';
+  });
+  document.getElementById('btnSaveModal').onclick=async()=>{
+    const desc=document.getElementById('ld_desc').value.trim();
+    const usd=parseNum(document.getElementById('ld_usd').value);
+    if(!desc){alert('내용을 입력하세요');return;}
+    if(!usd){alert('금액을 입력하세요');return;}
+    const payload={
+      id:uuid(), date:document.getElementById('ld_date').value,
+      category:document.getElementById('ld_cat').value,
+      payer:document.getElementById('ld_payer').value,
+      description:desc, amount_usd:usd,
+      amount_krw:Math.round(usd*FX.rate)
+    };
+    const {ok,error}=await api('ledger',{method:'POST',body:JSON.stringify(payload)});
+    closeModal();
+    if(ok){await loadLedger();}else alert('저장 실패: '+error);
+  };
+};
+
+window.deleteLedger=async(id)=>{
+  const {ok}=await api('ledger?id=eq.'+encodeURIComponent(id),{method:'DELETE'});
+  if(ok){LDG.items=LDG.items.filter(i=>i.id!==id);renderLedger();}
+};
+
 function openModal(title, body, btns){
   document.getElementById('overlay').classList.add('open');
   document.getElementById('modalTitle').textContent = title;
@@ -1409,6 +1628,7 @@ document.getElementById('btnFab').addEventListener('click',()=>{
   else if(tab==='memo') addMemo();
   else if(tab==='reserve') openReserveModal();
   else if(tab==='checklist') openCheckItemModal(null,'');
+  else if(tab==='ledger') openLedgerModal(TRIP_DAYS[0].date, TRIP_DAYS[0].label);
 });
 
 // ═══════════════════════════════════════════
@@ -1429,6 +1649,7 @@ function renderAll(){
 document.getElementById('btnSync').addEventListener('click', loadAll);
 loadAll();
 loadChecklist();
+loadLedger();
 
 })();
 </script>
