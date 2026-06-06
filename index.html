@@ -442,7 +442,8 @@ const DEF_PLACES = {
 // ═══════════════════════════════════════════
 async function loadAll(){
   setStatus('동기화 중...','spin');
-  await fetchRate();   // 환율 먼저 조회
+  // 환율은 백그라운드에서 별도 실행 (loadAll 블로킹 방지)
+  fetchRate().catch(()=>{});
   const [plc, sch, bgt, mem, res] = await Promise.all([
     api('places?order=created_at.asc'),
     api('schedules?order=date.asc'),
