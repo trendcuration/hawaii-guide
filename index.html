@@ -453,11 +453,10 @@ async function loadAll(){
 
   // places
   if(plc.ok && plc.data?.length){
-    console.log('places from DB:', plc.data.length, '건', plc.data.map(p=>p.name+'/'+p.category));
     S.places = {food:[],sights:[],fine:[],kids:[]};
     plc.data.forEach(p=>{
       const cat = p.category;
-      if(!S.places[cat]){ console.warn('unknown category:', cat); return; }
+      if(!S.places[cat]) return;
       S.places[cat].push({
         id: p.id,
         category: p.category,
@@ -478,23 +477,27 @@ async function loadAll(){
         mapUrl: p.map_url
       });
     });
-    console.log('S.places 결과:', Object.entries(S.places).map(([k,v])=>k+':'+v.length+'개'));
   } else {
-    // DB 비어있으면 기본 데이터 삽입
+    // DB 비어있으면 기본 데이터 삽입 (upsert로 중복 방지)
     const allPlaces = [
       ...DEF_PLACES.food.map(p=>({...p,category:'food'})),
       ...DEF_PLACES.sights.map(p=>({...p,category:'sights'})),
       ...DEF_PLACES.fine.map(p=>({...p,category:'fine'})),
       ...DEF_PLACES.kids.map(p=>({...p,category:'kids'})),
     ].map(p=>({
-      id:p.id, category:p.category, icon:p.icon, name:p.name,
-      name_en:p.nameEn||'', area:p.area||'', lat:p.lat||null, lon:p.lon||null,
-      price:p.price||'', rating:p.rating||null, rating_cnt:p.ratingCnt||'',
-      description:p.description||'', must_order:p.mustOrder||'',
-      tip:p.tip||'', tags:p.tags||[], addr:p.addr||'', map_url:p.mapUrl||''
+      id: p.id, category: p.category, icon: p.icon, name: p.name,
+      name_en: p.nameEn||'', area: p.area||'',
+      lat: p.lat||null, lon: p.lon||null,
+      price: p.price||'', rating: p.rating||null, rating_cnt: p.ratingCnt||'',
+      description: p.description||'', must_order: p.mustOrder||'',
+      tip: p.tip||'', tags: p.tags||[], addr: p.addr||'', map_url: p.mapUrl||''
     }));
-    await seedTable('places', allPlaces);
-    S.places = DEF_PLACES;
+    const {ok} = await api('places', {
+      method: 'POST',
+      body: JSON.stringify(allPlaces),
+      headers: { Prefer: 'resolution=ignore-duplicates' }
+    });
+    if(ok) S.places = DEF_PLACES;
   }
 
   // schedules
