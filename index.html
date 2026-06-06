@@ -456,11 +456,25 @@ async function loadAll(){
     S.places = {food:[],sights:[],fine:[],kids:[]};
     plc.data.forEach(p=>{
       const cat = p.category;
-      if(S.places[cat]) S.places[cat].push({
-        ...p,
-        nameEn: p.name_en, mustOrder: p.must_order,
-        mapUrl: p.map_url, ratingCnt: p.rating_cnt,
-        tags: Array.isArray(p.tags) ? p.tags : []
+      if(!S.places[cat]) return;
+      S.places[cat].push({
+        id: p.id,
+        category: p.category,
+        icon: p.icon,
+        name: p.name,
+        nameEn: p.name_en,
+        area: p.area,
+        lat: p.lat,
+        lon: p.lon,
+        price: p.price,
+        rating: p.rating,
+        ratingCnt: p.rating_cnt,
+        description: p.description,
+        mustOrder: p.must_order,
+        tip: p.tip,
+        tags: Array.isArray(p.tags) ? p.tags : [],
+        addr: p.addr,
+        mapUrl: p.map_url
       });
     });
   } else {
