@@ -443,12 +443,43 @@ const DEF_PLACES = {
 async function loadAll(){
   setStatus('동기화 중...','spin');
   await fetchRate();   // 환율 먼저 조회
-  const [sch, bgt, mem, res] = await Promise.all([
+  const [plc, sch, bgt, mem, res] = await Promise.all([
+    api('places?order=created_at.asc'),
     api('schedules?order=date.asc'),
     api('budget?order=created_at.asc'),
     api('memos?order=created_at.asc'),
     api('reservations?order=sort_order.asc')
   ]);
+
+  // places
+  if(plc.ok && plc.data?.length){
+    S.places = {food:[],sights:[],fine:[],kids:[]};
+    plc.data.forEach(p=>{
+      const cat = p.category;
+      if(S.places[cat]) S.places[cat].push({
+        ...p,
+        nameEn: p.name_en, mustOrder: p.must_order,
+        mapUrl: p.map_url, ratingCnt: p.rating_cnt,
+        tags: Array.isArray(p.tags) ? p.tags : []
+      });
+    });
+  } else {
+    // DB 비어있으면 기본 데이터 삽입
+    const allPlaces = [
+      ...DEF_PLACES.food.map(p=>({...p,category:'food'})),
+      ...DEF_PLACES.sights.map(p=>({...p,category:'sights'})),
+      ...DEF_PLACES.fine.map(p=>({...p,category:'fine'})),
+      ...DEF_PLACES.kids.map(p=>({...p,category:'kids'})),
+    ].map(p=>({
+      id:p.id, category:p.category, icon:p.icon, name:p.name,
+      name_en:p.nameEn||'', area:p.area||'', lat:p.lat||null, lon:p.lon||null,
+      price:p.price||'', rating:p.rating||null, rating_cnt:p.ratingCnt||'',
+      description:p.description||'', must_order:p.mustOrder||'',
+      tip:p.tip||'', tags:p.tags||[], addr:p.addr||'', map_url:p.mapUrl||''
+    }));
+    await seedTable('places', allPlaces);
+    S.places = DEF_PLACES;
+  }
 
   // schedules
   if(sch.ok && sch.data?.length){
@@ -986,28 +1017,43 @@ function openPlaceModal(cat, id){
      <button class="btn-s" onclick="closeModal()">취소</button>
      <button class="btn-p" id="btnSaveModal">저장</button>`);
 
-  document.getElementById('btnSaveModal').onclick = ()=>{
+  document.getElementById('btnSaveModal').onclick = async()=>{
     const newCat = document.getElementById('f_cat').value;
     const updated = {
-      id: p.id||uuid(), icon:document.getElementById('f_icon').value.trim()||'📍',
-      price:document.getElementById('f_price').value.trim(), name:document.getElementById('f_name').value.trim(),
-      nameEn:document.getElementById('f_nameEn').value.trim(), area:document.getElementById('f_area').value.trim(),
-      rating:document.getElementById('f_rating').value.trim(),
-      lat:parseFloat(document.getElementById('f_lat').value)||null, lon:parseFloat(document.getElementById('f_lon').value)||null,
-      description:document.getElementById('f_desc').value.trim(), mustOrder:document.getElementById('f_must').value.trim(),
-      tip:document.getElementById('f_tip').value.trim(),
-      tags:document.getElementById('f_tags').value.split(',').map(s=>s.trim()).filter(Boolean),
-      addr:document.getElementById('f_addr').value.trim(), mapUrl:document.getElementById('f_mapUrl').value.trim()
+      id: p.id||uuid(),
+      category: newCat,
+      icon: document.getElementById('f_icon').value.trim()||'📍',
+      price: document.getElementById('f_price').value.trim(),
+      name: document.getElementById('f_name').value.trim(),
+      name_en: document.getElementById('f_nameEn').value.trim(),
+      area: document.getElementById('f_area').value.trim(),
+      rating: parseFloat(document.getElementById('f_rating').value)||null,
+      lat: parseFloat(document.getElementById('f_lat').value)||null,
+      lon: parseFloat(document.getElementById('f_lon').value)||null,
+      description: document.getElementById('f_desc').value.trim(),
+      must_order: document.getElementById('f_must').value.trim(),
+      tip: document.getElementById('f_tip').value.trim(),
+      tags: document.getElementById('f_tags').value.split(',').map(s=>s.trim()).filter(Boolean),
+      addr: document.getElementById('f_addr').value.trim(),
+      map_url: document.getElementById('f_mapUrl').value.trim()
     };
     if(!updated.name){alert('장소명을 입력하세요');return;}
-    if(isEdit){ S.places[cat] = S.places[cat].filter(x=>x.id!==id); }
-    S.places[newCat].push(updated);
-    closeModal(); renderAll();
+    setStatus('저장 중...','spin');
+    const path = isEdit ? 'places?id=eq.'+encodeURIComponent(p.id) : 'places';
+    const method = isEdit ? 'PATCH' : 'POST';
+    const {ok,error} = await api(path,{method,body:JSON.stringify(updated)});
+    closeModal();
+    if(ok){ await loadAll(); }
+    else alert('저장 실패: '+error);
   };
   const delBtn = document.getElementById('btnDelPlace');
-  if(delBtn) delBtn.onclick = ()=>{
-    S.places[cat] = S.places[cat].filter(x=>x.id!==id);
-    closeModal(); renderAll();
+  if(delBtn) delBtn.onclick = async()=>{
+    if(!confirm('이 장소를 삭제할까요?')) return;
+    setStatus('삭제 중...','spin');
+    const {ok,error} = await api('places?id=eq.'+encodeURIComponent(p.id),{method:'DELETE'});
+    closeModal();
+    if(ok){ await loadAll(); }
+    else alert('삭제 실패: '+error);
   };
 }
 
