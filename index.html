@@ -456,7 +456,10 @@ async function loadAll(){
   if(plc.ok && Array.isArray(plc.data)){
     placesData = plc.data;
   }
-  if(!placesData.length){
+  // 디버그: 상태 표시
+  const dbgMsg = `plc.ok=${plc.ok}, data길이=${placesData.length}, error=${plc.error||'없음'}`;
+  setStatus('🔍 '+dbgMsg, 'spin');
+  await new Promise(r=>setTimeout(r,3000)); // 3초 표시
     // 비어있으면 기본 데이터 삽입
     const allPlaces = [
       ...DEF_PLACES.food.map(p=>({...p,category:'food'})),
