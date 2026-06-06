@@ -1450,10 +1450,29 @@ const LDG_CATS = [
   {key:'쇼핑',icon:'🛍️'},{key:'관광',icon:'🎡'},
   {key:'숙소',icon:'🏨'},{key:'기타',icon:'💳'},
 ];
-const BUDGET_USD = 4549.94;
+let BUDGET_USD = 4549.94; // 기본값, DB에서 로드
+
+async function loadBudgetGoal(){
+  const {ok,data} = await api('ledger_settings?id=eq.budget_usd');
+  if(ok && data?.length) BUDGET_USD = Number(data[0].value) || 4549.94;
+}
+
+async function saveBudgetGoal(val){
+  const num = parseNum(val);
+  if(!num || num <= 0) return;
+  BUDGET_USD = num;
+  // upsert
+  await api('ledger_settings', {
+    method:'POST',
+    body: JSON.stringify({id:'budget_usd', value:String(num)}),
+    headers:{Prefer:'resolution=merge-duplicates'}
+  });
+  renderLedger();
+}
 let LDG = {items:[], filterDate:'all'};
 
 async function loadLedger(){
+  await loadBudgetGoal();
   const {ok,data} = await api('ledger?order=date.asc,created_at.asc');
   LDG.items = (ok && data) ? data : [];
   renderLedger();
@@ -1473,8 +1492,8 @@ function renderLedger(){
   if(!sumEl) return;
   sumEl.innerHTML = `
     <div class="ldg-summary">
-      <div class="ldg-sum-card total">
-        <div class="ldg-sum-label">총 예산</div>
+      <div class="ldg-sum-card total" onclick="editBudgetGoal()" style="cursor:pointer" title="탭해서 수정">
+        <div class="ldg-sum-label">총 예산 ✏️</div>
         <div class="ldg-sum-amount">$${fmtD(BUDGET_USD)}</div>
         <div class="ldg-sum-krw">${fmtDK(BUDGET_USD)}</div>
       </div>
@@ -1546,6 +1565,34 @@ window.ldgFilter=(date,chip)=>{
   document.querySelectorAll('#ldgDateFilter .chip').forEach(c=>c.classList.remove('on'));
   chip.classList.add('on');
   renderLedger();
+};
+
+window.editBudgetGoal = ()=>{
+  openModal('총 예산 수정',`
+    <div class="fg">
+      <label class="fl">총 예산 ($)</label>
+      <input class="fi" id="bg_usd" type="text" inputmode="decimal"
+        value="${fmtD(BUDGET_USD)}" placeholder="4549.94">
+      <div id="bg_convert" style="font-size:11px;color:var(--teal-d);margin-top:5px">
+        ≈ ₩${fmtKRW(Math.round(BUDGET_USD*FX.rate))}
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--ink-3);margin-top:4px">
+      💡 변경하면 Supabase에 저장되어 모든 기기에서 동일하게 반영됩니다.
+    </div>`,
+    `<button class="btn-s" onclick="closeModal()">취소</button>
+     <button class="btn-p" id="btnSaveModal">저장</button>`);
+  document.getElementById('bg_usd').addEventListener('input',()=>{
+    const v = parseNum(document.getElementById('bg_usd').value);
+    document.getElementById('bg_convert').textContent = v ? `≈ ₩${fmtKRW(Math.round(v*FX.rate))}` : '';
+  });
+  document.getElementById('btnSaveModal').onclick = async()=>{
+    const val = document.getElementById('bg_usd').value;
+    const num = parseNum(val);
+    if(!num||num<=0){alert('올바른 금액을 입력하세요');return;}
+    await saveBudgetGoal(num);
+    closeModal();
+  };
 };
 
 window.openLedgerModal=(date,dayLabel)=>{
