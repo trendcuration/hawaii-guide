@@ -196,6 +196,40 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 /* ── FAB ── */
 .fab{position:fixed;bottom:calc(16px + var(--safe));right:16px;z-index:50;width:52px;height:52px;border-radius:999px;background:var(--teal);color:#fff;border:none;box-shadow:var(--shadow-lg);cursor:pointer;font-size:26px;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 
+/* ── CHECKLIST ── */
+.cl-progress-wrap{margin-bottom:14px}
+.cl-prog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.cl-prog-label{font-size:12px;font-weight:700;color:var(--ink-2)}
+.cl-prog-count{font-size:11px;color:var(--ink-3)}
+.cl-prog-bar{height:8px;background:#e0eaf4;border-radius:99px;overflow:hidden}
+.cl-prog-fill{height:100%;border-radius:99px;transition:width .3s}
+.cl-prog-mia{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.cl-prog-dongtan{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.cl-prog-common{background:linear-gradient(90deg,var(--teal),#48cae4)}
+
+.cl-group-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.cl-gtab{flex:1;min-width:80px;padding:9px 8px;border:1.5px solid #d0dde8;background:#fff;border-radius:10px;font-size:12px;font-weight:700;color:var(--ink-2);cursor:pointer;font-family:inherit;transition:all .18s;text-align:center}
+.cl-gtab.on[data-g="mia"]{background:#fff8e1;border-color:#f59e0b;color:#b45309}
+.cl-gtab.on[data-g="dongtan"]{background:#eff6ff;border-color:#3b82f6;color:#1d4ed8}
+.cl-gtab.on[data-g="common"]{background:var(--teal-bg);border-color:var(--teal);color:var(--teal-d)}
+
+.cl-section{margin-bottom:14px}
+.cl-section-title{font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase;padding:8px 0 6px;border-bottom:1px solid var(--line);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.cl-items{display:flex;flex-direction:column;gap:6px}
+.cl-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e8f0f4;border-radius:10px;padding:10px 12px;transition:all .15s}
+.cl-item.checked{background:#f0fdf4;border-color:#86efac}
+.cl-check{width:22px;height:22px;border-radius:6px;border:2px solid #c8d8e4;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;font-size:13px}
+.cl-item.checked .cl-check{background:#22c55e;border-color:#22c55e;color:#fff}
+.cl-item-body{flex:1;min-width:0}
+.cl-item-name{font-size:14px;font-weight:600;color:var(--ink)}
+.cl-item.checked .cl-item-name{text-decoration:line-through;color:var(--ink-3)}
+.cl-item-note{font-size:11px;color:var(--ink-3);margin-top:1px}
+.cl-item-actions{display:flex;gap:5px;flex-shrink:0}
+.cl-edit-btn{background:none;border:none;color:#c8d0d8;font-size:12px;cursor:pointer;padding:2px 5px;border-radius:5px}
+.cl-edit-btn:hover{color:var(--teal);background:var(--teal-bg)}
+.cl-add-row{display:flex;align-items:center;gap:8px;background:none;border:1.5px dashed #d0dde8;border-radius:10px;padding:9px 12px;width:100%;cursor:pointer;font-size:12px;color:var(--ink-3);font-family:inherit;transition:all .18s;margin-top:4px}
+.cl-add-row:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+
 .footer{padding:18px;text-align:center;font-size:11px;color:var(--ink-3)}
 @media(max-width:480px){.grid{grid-template-columns:1fr}.frow{grid-template-columns:1fr}}
 </style>
@@ -205,9 +239,9 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 <!-- HERO -->
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-eyebrow">OAHU · 2026.07.03 ~ 07.11</div>
+    <div class="hero-eyebrow">OAHU · 2026.07.03 ~ 07.09</div>
     <h1>2026 <em>Hawaii</em></h1>
-    <div class="hero-sub">성인5 · 아이 2 · 7박 9일 가족 여행</div>
+    <div class="hero-sub">성인 6 · 아이 1 · 7박 8일 가족 여행</div>
   </div>
 </section>
 
@@ -222,6 +256,7 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
     <button class="tab" data-tab="reserve">📋 예약/보험</button>
     <button class="tab" data-tab="memo">📝 메모</button>
     <button class="tab" data-tab="budget">💰 예산</button>
+    <button class="tab" data-tab="checklist">🧳 준비물</button>
   </div>
   <div class="status">
     <div class="status-left">
@@ -324,7 +359,27 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
     <div class="budget-card" id="budgetCard"></div>
   </section>
 
-</main>
+  <!-- CHECKLIST -->
+  <section id="pane-checklist" class="section">
+    <div class="pane-title">🧳 준비물</div>
+    <div class="pane-sub">그룹별 준비물 체크리스트</div>
+
+    <!-- 진행률 -->
+    <div class="cl-progress-wrap" id="clProgressWrap"></div>
+
+    <!-- 그룹 탭 -->
+    <div class="cl-group-tabs">
+      <button class="cl-gtab on" data-g="mia">🔶 미아(주안)</button>
+      <button class="cl-gtab" data-g="dongtan">🔷 동탄(주아)</button>
+      <button class="cl-gtab" data-g="common">🟢 공통</button>
+    </div>
+
+    <!-- 카테고리 필터 -->
+    <div class="area-filter" id="clCatFilter"></div>
+
+    <!-- 아이템 목록 -->
+    <div id="clList"></div>
+  </section>
 
 <button class="fab" id="btnFab" aria-label="추가">＋</button>
 
@@ -1123,8 +1178,183 @@ function openPlaceModal(cat, id){
 }
 
 // ═══════════════════════════════════════════
-// MODAL HELPERS
+// CHECKLIST
 // ═══════════════════════════════════════════
+const DEF_CHECKLIST = [
+  // 미아(주안)
+  {id:'c1',group_name:'mia',category:'여행서류',name:'여권 (유효기간 확인)',note:'6개월 이상',checked:false},
+  {id:'c2',group_name:'mia',category:'여행서류',name:'ESTA 출력본',note:'미국 입국 필수',checked:false},
+  {id:'c3',group_name:'mia',category:'여행서류',name:'항공권 e-ticket',note:'YP151 / YP152',checked:false},
+  {id:'c4',group_name:'mia',category:'여행서류',name:'여행자보험 증서',note:'',checked:false},
+  {id:'c5',group_name:'mia',category:'의류/용품',name:'수영복',note:'',checked:false},
+  {id:'c6',group_name:'mia',category:'의류/용품',name:'래쉬가드',note:'',checked:false},
+  {id:'c7',group_name:'mia',category:'의류/용품',name:'선크림 SPF50+',note:'리프 스프레이 금지!',checked:false},
+  {id:'c8',group_name:'mia',category:'의류/용품',name:'선글라스 / 모자',note:'',checked:false},
+  {id:'c9',group_name:'mia',category:'의류/용품',name:'샌들 / 슬리퍼',note:'',checked:false},
+  {id:'c10',group_name:'mia',category:'의류/용품',name:'가벼운 외투',note:'에어컨 대비',checked:false},
+  {id:'c11',group_name:'mia',category:'전자기기',name:'충전기 (폰·태블릿)',note:'',checked:false},
+  {id:'c12',group_name:'mia',category:'전자기기',name:'보조배터리',note:'',checked:false},
+  {id:'c13',group_name:'mia',category:'전자기기',name:'유심 / eSIM',note:'',checked:false},
+  {id:'c14',group_name:'mia',category:'식품',name:'누룽지',note:'',checked:false},
+  {id:'c15',group_name:'mia',category:'식품',name:'라면',note:'',checked:false},
+  {id:'c16',group_name:'mia',category:'식품',name:'김치',note:'',checked:false},
+  // 동탄(주아)
+  {id:'c17',group_name:'dongtan',category:'여행서류',name:'여권 (유효기간 확인)',note:'6개월 이상',checked:false},
+  {id:'c18',group_name:'dongtan',category:'여행서류',name:'ESTA 출력본',note:'미국 입국 필수',checked:false},
+  {id:'c19',group_name:'dongtan',category:'여행서류',name:'항공권 e-ticket',note:'YP151 / YP152',checked:false},
+  {id:'c20',group_name:'dongtan',category:'여행서류',name:'여행자보험 증서',note:'',checked:false},
+  {id:'c21',group_name:'dongtan',category:'의류/용품',name:'수영복',note:'',checked:false},
+  {id:'c22',group_name:'dongtan',category:'의류/용품',name:'래쉬가드',note:'',checked:false},
+  {id:'c23',group_name:'dongtan',category:'의류/용품',name:'선크림 SPF50+',note:'리프 스프레이 금지!',checked:false},
+  {id:'c24',group_name:'dongtan',category:'의류/용품',name:'선글라스 / 모자',note:'',checked:false},
+  {id:'c25',group_name:'dongtan',category:'전자기기',name:'충전기 (폰·태블릿)',note:'',checked:false},
+  {id:'c26',group_name:'dongtan',category:'전자기기',name:'보조배터리',note:'',checked:false},
+  {id:'c27',group_name:'dongtan',category:'전자기기',name:'유심 / eSIM',note:'',checked:false},
+  {id:'c28',group_name:'dongtan',category:'식품',name:'후리카케',note:'',checked:false},
+  {id:'c29',group_name:'dongtan',category:'식품',name:'김자반',note:'',checked:false},
+  {id:'c30',group_name:'dongtan',category:'식품',name:'잡곡·쌀',note:'',checked:false},
+  // 공통
+  {id:'c31',group_name:'common',category:'렌터카',name:'국제운전면허증',note:'',checked:false},
+  {id:'c32',group_name:'common',category:'렌터카',name:'렌터카 예약 확인서',note:'#69043973',checked:false},
+  {id:'c33',group_name:'common',category:'쇼핑',name:'코스트코 카드',note:'',checked:false},
+  {id:'c34',group_name:'common',category:'비상용품',name:'상비약',note:'해열제·소화제·지사제',checked:false},
+  {id:'c35',group_name:'common',category:'비상용품',name:'물티슈 / 손소독제',note:'',checked:false},
+  {id:'c36',group_name:'common',category:'비상용품',name:'미국 플러그 변환기',note:'Type A',checked:false},
+];
+
+let CL = { items:[], currentGroup:'mia', currentCat:'전체' };
+
+// Supabase checklist 로드
+async function loadChecklist(){
+  const {ok,data} = await api('checklist?order=created_at.asc');
+  if(ok && data?.length){
+    CL.items = data.map(d=>({...d, group:d.group_name}));
+
+  } else {
+    await api('checklist',{method:'POST',body:JSON.stringify(DEF_CHECKLIST),headers:{Prefer:'resolution=ignore-duplicates'}});
+    CL.items = DEF_CHECKLIST;
+  }
+  renderChecklist();
+}
+
+function renderChecklistProgress(){
+  const wrap = document.getElementById('clProgressWrap');
+  if(!wrap) return;
+  const groups = [{g:'mia',label:'🔶 미아',cls:'cl-prog-mia'},{g:'dongtan',label:'🔷 동탄',cls:'cl-prog-dongtan'},{g:'common',label:'🟢 공통',cls:'cl-prog-common'}];
+  wrap.innerHTML = groups.map(({g,label,cls})=>{
+    const items = CL.items.filter(i=>i.group===g);
+    const done = items.filter(i=>i.checked).length;
+    const pct = items.length ? Math.round(done/items.length*100) : 0;
+    return `<div style="margin-bottom:8px">
+      <div class="cl-prog-row"><span class="cl-prog-label">${label}</span><span class="cl-prog-count">${done}/${items.length} (${pct}%)</span></div>
+      <div class="cl-prog-bar"><div class="cl-prog-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderChecklist(){
+  renderChecklistProgress();
+
+  // 카테고리 필터
+  const filterEl = document.getElementById('clCatFilter');
+  const groupItems = CL.items.filter(i=>i.group_name===CL.currentGroup);
+  const cats = ['전체',...new Set(groupItems.map(i=>i.category).filter(Boolean))];
+  if(filterEl){
+    filterEl.innerHTML = cats.map(c=>`<div class="chip${CL.currentCat===c?' on':''}" data-c="${c}">${c}</div>`).join('');
+    filterEl.querySelectorAll('.chip').forEach(el=>el.addEventListener('click',()=>{CL.currentCat=el.dataset.c;renderChecklist();}));
+  }
+
+  const list = document.getElementById('clList');
+  if(!list) return;
+
+  const filtered = groupItems.filter(i=>CL.currentCat==='전체'||i.category===CL.currentCat);
+  const byCat = {};
+  filtered.forEach(i=>{ if(!byCat[i.category]) byCat[i.category]=[]; byCat[i.category].push(i); });
+
+  list.innerHTML = Object.entries(byCat).map(([cat,items])=>`
+    <div class="cl-section">
+      <div class="cl-section-title">
+        <span>${cat}</span>
+        <span style="font-weight:400">${items.filter(i=>i.checked).length}/${items.length}</span>
+      </div>
+      <div class="cl-items">
+        ${items.map(item=>`
+          <div class="cl-item${item.checked?' checked':''}" id="cli-${item.id}">
+            <div class="cl-check" onclick="toggleCheck('${item.id}')">
+              ${item.checked?'✓':''}
+            </div>
+            <div class="cl-item-body">
+              <div class="cl-item-name">${esc(item.name)}</div>
+              ${item.note?`<div class="cl-item-note">${esc(item.note)}</div>`:''}
+            </div>
+            <div class="cl-item-actions">
+              <button class="cl-edit-btn" onclick="openCheckItemModal('${item.id}')">✏️</button>
+              <button class="cl-edit-btn" onclick="deleteCheckItem('${item.id}')">🗑️</button>
+            </div>
+          </div>`).join('')}
+        <button class="cl-add-row" onclick="openCheckItemModal(null,'${cat}')">＋ ${cat} 항목 추가</button>
+      </div>
+    </div>`).join('') +
+    `<button class="cl-add-row" style="margin-top:8px" onclick="openCheckItemModal(null,'')">＋ 새 카테고리로 추가</button>`;
+
+  // 그룹탭 이벤트
+  document.querySelectorAll('.cl-gtab').forEach(btn=>{
+    btn.classList.toggle('on', btn.dataset.g===CL.currentGroup);
+    btn.onclick = ()=>{ CL.currentGroup=btn.dataset.g; CL.currentCat='전체'; renderChecklist(); };
+  });
+}
+
+window.toggleCheck = async(id)=>{
+  const item = CL.items.find(i=>i.id===id);
+  if(!item) return;
+  item.checked = !item.checked;
+  // 즉시 UI 반영
+  const el = document.getElementById('cli-'+id);
+  if(el){
+    el.classList.toggle('checked', item.checked);
+    el.querySelector('.cl-check').textContent = item.checked?'✓':'';
+    el.querySelector('.cl-item-name').style.textDecoration = item.checked?'line-through':'';
+  }
+  renderChecklistProgress();
+  await api('checklist?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({checked:item.checked})});
+};
+
+window.openCheckItemModal = (id, defCat='')=>{
+  const item = id ? CL.items.find(i=>i.id===id) : {group:CL.currentGroup,category:defCat,name:'',note:'',checked:false};
+  const isEdit = !!id;
+  const gOpts = [{v:'mia',l:'🔶 미아(주안)'},{v:'dongtan',l:'🔷 동탄(주아)'},{v:'common',l:'🟢 공통'}]
+    .map(o=>`<option value="${o.v}" ${o.v===(item.group_name||item.group)?'selected':''}>${o.l}</option>`).join('');
+  openModal(isEdit?'준비물 수정':'준비물 추가',`
+    <div class="fg"><label class="fl">그룹</label><select class="fi" id="ck_group">${gOpts}</select></div>
+    <div class="fg"><label class="fl">카테고리</label><input class="fi" id="ck_cat" value="${esc(item.category||defCat)}" placeholder="예: 의류/용품, 전자기기"></div>
+    <div class="fg"><label class="fl">항목명 *</label><input class="fi" id="ck_name" value="${esc(item.name)}"></div>
+    <div class="fg"><label class="fl">메모 (선택)</label><input class="fi" id="ck_note" value="${esc(item.note||'')}" placeholder="예: 리프 스프레이 금지!"></div>`,
+    `${isEdit?`<button class="btn-d" onclick="deleteCheckItem('${id}')">삭제</button>`:''}
+     <button class="btn-s" onclick="closeModal()">취소</button>
+     <button class="btn-p" id="btnSaveModal">저장</button>`);
+  document.getElementById('btnSaveModal').onclick = async()=>{
+    const name = document.getElementById('ck_name').value.trim();
+    if(!name){alert('항목명을 입력하세요');return;}
+    const payload = {
+      id: item.id||uuid(),
+      group_name: document.getElementById('ck_group').value,
+      category: document.getElementById('ck_cat').value.trim()||'기타',
+      name, note: document.getElementById('ck_note').value.trim(),
+      checked: item.checked||false
+    };
+    const path = isEdit?'checklist?id=eq.'+encodeURIComponent(id):'checklist';
+    const method = isEdit?'PATCH':'POST';
+    const {ok,error} = await api(path,{method,body:JSON.stringify(payload)});
+    closeModal();
+    if(ok){ await loadChecklist(); } else alert('저장 실패: '+error);
+  };
+};
+
+window.deleteCheckItem = async(id)=>{
+  closeModal();
+  const {ok} = await api('checklist?id=eq.'+encodeURIComponent(id),{method:'DELETE'});
+  if(ok){ CL.items = CL.items.filter(i=>i.id!==id); renderChecklist(); }
+};
 function openModal(title, body, btns){
   document.getElementById('overlay').classList.add('open');
   document.getElementById('modalTitle').textContent = title;
@@ -1160,6 +1390,7 @@ document.getElementById('btnFab').addEventListener('click',()=>{
   else if(tab==='budget') openBudgetModal();
   else if(tab==='memo') addMemo();
   else if(tab==='reserve') openReserveModal();
+  else if(tab==='checklist') openCheckItemModal(null,'');
 });
 
 // ═══════════════════════════════════════════
@@ -1171,6 +1402,7 @@ function renderAll(){
   renderBudget();
   renderMemos();
   renderReservations();
+  renderChecklist();
 }
 
 // ═══════════════════════════════════════════
@@ -1178,6 +1410,7 @@ function renderAll(){
 // ═══════════════════════════════════════════
 document.getElementById('btnSync').addEventListener('click', loadAll);
 loadAll();
+loadChecklist();
 
 })();
 </script>
