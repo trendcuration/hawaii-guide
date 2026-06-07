@@ -751,17 +751,76 @@ window.pinClick = (id, tab) => {
   if(pin) pin.classList.add('active');
 };
 
+const GMAP_KEY = 'AIzaSyDJBSi_fBK2LpAnKBXfZsZ_n0stYK1wZvc';
+const PIN_COLORS_STATIC = {food:'red', sights:'green', fine:'purple', kids:'orange'};
+
+function buildStaticMapUrl(tab, items){
+  const geo = items.filter(p=>p.lat&&p.lon);
+  if(!geo.length) return '';
+  const color = PIN_COLORS_STATIC[tab]||'red';
+  const w = Math.min(window.innerWidth, 860);
+  const h = 280;
+  const scale = window.devicePixelRatio >= 2 ? 2 : 1;
+
+  // 중심 좌표 계산
+  const avgLat = geo.reduce((s,p)=>s+Number(p.lat),0)/geo.length;
+  const avgLon = geo.reduce((s,p)=>s+Number(p.lon),0)/geo.length;
+
+  // 줌 레벨 (범위에 따라)
+  const latDiff = Math.max(...geo.map(p=>p.lat)) - Math.min(...geo.map(p=>p.lat));
+  const lonDiff = Math.max(...geo.map(p=>p.lon)) - Math.min(...geo.map(p=>p.lon));
+  const spread = Math.max(latDiff, lonDiff);
+  const zoom = spread > 0.3 ? 10 : spread > 0.1 ? 11 : 12;
+
+  // 마커 (번호 포함)
+  const markers = geo.map((p,i)=>
+    `markers=color:${color}%7Clabel:${i+1}%7C${p.lat},${p.lon}`
+  ).join('&');
+
+  return `https://maps.googleapis.com/maps/api/staticmap?center=${avgLat},${avgLon}&zoom=${zoom}&size=${Math.round(w/scale)}x${h}&scale=${scale}&maptype=roadmap&${markers}&key=${GMAP_KEY}`;
+}
+
 function renderMap(tab){
   const data = S.places[tab]||[];
   const wrap = document.getElementById('mapWrap-'+tab);
   const hint = document.getElementById('mapHint-'+tab);
   if(!wrap) return;
 
-  // 항상 SVG 커스텀 맵 사용 (모든 핀 표시)
-  wrap.classList.add('use-svg');
-  document.getElementById('svgMap-'+tab).innerHTML = buildSVG(tab, data);
-  hint.innerHTML = '📍 핀 탭 → 카드로 이동 | 카드 📍지도 버튼 → 구글맵 열기';
+  const geo = data.filter(p=>p.lat&&p.lon);
+  const svgEl = document.getElementById('svgMap-'+tab);
+
+  if(geo.length && GMAP_KEY){
+    // Google Static Maps — 여러 핀 이미지로 표시
+    wrap.classList.remove('use-svg');
+    const url = buildStaticMapUrl(tab, data);
+    svgEl.innerHTML = `
+      <div style="position:relative;width:100%;overflow:hidden;background:#e8f0f8">
+        <img src="${url}" alt="지도" style="width:100%;display:block;cursor:pointer"
+          onclick="openFullMap('${tab}')"
+          onerror="this.parentElement.innerHTML='<div style=padding:20px;text-align:center;color:#888>지도를 불러오는 중...</div>'">
+        <div style="position:absolute;bottom:6px;right:8px;background:rgba(255,255,255,.85);border-radius:6px;padding:3px 8px;font-size:10px;color:#333;font-weight:700">탭해서 구글맵 열기</div>
+      </div>`;
+    svgEl.style.display = 'block';
+    document.getElementById('gmap-'+tab).style.display = 'none';
+    hint.innerHTML = '📍 번호는 카드 순서 | 탭하면 구글맵에서 전체 보기 | 카드 📍지도 버튼 → 개별 구글맵';
+  } else {
+    // 폴백: SVG 커스텀 맵
+    wrap.classList.add('use-svg');
+    svgEl.innerHTML = buildSVG(tab, data);
+    hint.innerHTML = '📍 핀 탭 → 카드로 이동 | 카드 📍지도 → 구글맵 열기';
+  }
 }
+
+// 탭하면 구글맵 앱/웹으로 장소 전체 보기
+window.openFullMap = (tab) => {
+  const data = (S.places[tab]||[]).filter(p=>p.lat&&p.lon);
+  if(!data.length) return;
+  // 첫 번째 장소 기준으로 구글맵 검색 열기
+  const query = encodeURIComponent(data.map(p=>p.name).join(' OR '));
+  const avgLat = data.reduce((s,p)=>s+Number(p.lat),0)/data.length;
+  const avgLon = data.reduce((s,p)=>s+Number(p.lon),0)/data.length;
+  window.open(`https://www.google.com/maps/search/${query}/@${avgLat},${avgLon},12z`, '_blank');
+};
 
 // ═══════════════════════════════════════════
 // RENDER PLACES
