@@ -76,6 +76,7 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#dbe9ef}
 .card.highlight{border:2px solid var(--teal);transform:translateY(-2px)}
 .card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 0}
+.pin-badge{width:24px;height:24px;border-radius:50%;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .card-icon{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;background:linear-gradient(135deg,#e6f4f6,#f7f1e3);flex-shrink:0}
 .card-badges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
 .badge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:7px}
@@ -894,11 +895,24 @@ function renderPlaces(cat){
 
   const grid = document.getElementById(cat+'Grid');
   if(!list.length){ grid.innerHTML=`<div class="empty"><div class="icon">${{food:'🍜',sights:'🗻',fine:'🥂',kids:'👶'}[cat]}</div>장소가 없습니다.</div>`; return; }
+
+  // 좌표 있는 장소에만 지도 핀 번호 부여 (지도와 동일 순서)
+  const geoItems = all.filter(p=>p.lat&&p.lon);
+  const pinNumMap = {}; // id → 핀 번호
+  geoItems.forEach((p,i)=>{ pinNumMap[p.id] = i+1; });
+
+  const PIN_COLOR_MAP = {food:'#E06050',sights:'#2A7D44',fine:'#7B5EA7',kids:'#E07020'};
+  const pinColor = PIN_COLOR_MAP[cat]||'#0b7a86';
+
   grid.innerHTML = list.map(p=>{
     const stars = p.rating ? '★'.repeat(Math.round(Number(p.rating)))+'☆'.repeat(5-Math.round(Number(p.rating))) : '';
+    const pinNum = pinNumMap[p.id];
     return `<div class="card" id="card-${p.id}">
       <div class="card-head">
-        <div class="card-icon">${esc(p.icon||'📍')}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="card-icon">${esc(p.icon||'📍')}</div>
+          ${pinNum?`<div class="pin-badge" style="background:${pinColor}">${pinNum}</div>`:''}
+        </div>
         <div class="card-badges">
           ${p.price?`<span class="badge ${pbc(p.price)}">${esc(p.price)}</span>`:''}
           ${p.area?`<span class="badge b-area">${esc(p.area)}</span>`:''}
