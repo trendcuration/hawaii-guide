@@ -45,6 +45,7 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 
 /* ── MAP ── */
 .map-wrap{background:#fff;border-radius:0 0 var(--r) var(--r);margin-bottom:16px;box-shadow:var(--shadow);border:1px solid var(--line);border-top:none;overflow:hidden;position:relative}
+.js-map{width:100%;height:300px;background:#e8f0f8}
 .gmap-frame{width:100%;height:280px;display:block;border:none}
 .svg-map-wrap{display:none;width:100%;background:#B8DCE8}
 .svg-map-wrap svg{width:100%;height:auto;display:block}
@@ -320,9 +321,8 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
   <!-- FOOD -->
   <section id="pane-food" class="section on">
     <div class="map-wrap" id="mapWrap-food">
-      <iframe class="gmap-frame" id="gmap-food" src="" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-      <div class="svg-map-wrap" id="svgMap-food"></div>
-      <div class="map-hint" id="mapHint-food">📍 핀 탭 → 카드로 이동 | 카드 📍지도 → 구글맵 열기</div>
+      <div class="js-map" id="jsMap-food"></div>
+      <div class="map-hint" id="mapHint-food">📍 핀 탭 → 장소명 표시 | 카드 📍지도 → 구글맵 열기</div>
     </div>
     <div class="pane-title">🍜 맛집</div><div class="pane-sub">지역별 현지 인기 맛집</div>
     <div class="area-filter" id="foodFilter"></div>
@@ -332,9 +332,8 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
   <!-- SIGHTS -->
   <section id="pane-sights" class="section">
     <div class="map-wrap" id="mapWrap-sights">
-      <iframe class="gmap-frame" id="gmap-sights" src="" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-      <div class="svg-map-wrap" id="svgMap-sights"></div>
-      <div class="map-hint" id="mapHint-sights">📍 핀 탭 → 카드로 이동 | 카드 📍지도 → 구글맵 열기</div>
+      <div class="js-map" id="jsMap-sights"></div>
+      <div class="map-hint" id="mapHint-sights">📍 핀 탭 → 장소명 표시 | 카드 📍지도 → 구글맵 열기</div>
     </div>
     <div class="pane-title">🗻 관광지</div><div class="pane-sub">자연·역사·문화 명소</div>
     <div class="area-filter" id="sightsFilter"></div>
@@ -344,9 +343,8 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
   <!-- FINE -->
   <section id="pane-fine" class="section">
     <div class="map-wrap" id="mapWrap-fine">
-      <iframe class="gmap-frame" id="gmap-fine" src="" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-      <div class="svg-map-wrap" id="svgMap-fine"></div>
-      <div class="map-hint" id="mapHint-fine">📍 핀 탭 → 카드로 이동 | 카드 📍지도 → 구글맵 열기</div>
+      <div class="js-map" id="jsMap-fine"></div>
+      <div class="map-hint" id="mapHint-fine">📍 핀 탭 → 장소명 표시 | 카드 📍지도 → 구글맵 열기</div>
     </div>
     <div class="pane-title">🥂 파인다이닝</div><div class="pane-sub">특별한 날을 위한 레스토랑</div>
     <div class="grid" id="fineGrid"></div>
@@ -355,9 +353,8 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
   <!-- KIDS -->
   <section id="pane-kids" class="section">
     <div class="map-wrap" id="mapWrap-kids">
-      <iframe class="gmap-frame" id="gmap-kids" src="" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-      <div class="svg-map-wrap" id="svgMap-kids"></div>
-      <div class="map-hint" id="mapHint-kids">📍 핀 탭 → 카드로 이동 | 카드 📍지도 → 구글맵 열기</div>
+      <div class="js-map" id="jsMap-kids"></div>
+      <div class="map-hint" id="mapHint-kids">📍 핀 탭 → 장소명 표시 | 카드 📍지도 → 구글맵 열기</div>
     </div>
     <div class="pane-title">👶 with Kids</div><div class="pane-sub">아이와 함께하기 좋은 곳</div>
     <div class="grid" id="kidsGrid"></div>
@@ -752,75 +749,129 @@ window.pinClick = (id, tab) => {
 };
 
 const GMAP_KEY = 'AIzaSyDJBSi_fBK2LpAnKBXfZsZ_n0stYK1wZvc';
-const PIN_COLORS_STATIC = {food:'red', sights:'green', fine:'purple', kids:'orange'};
+const PIN_COLORS_JS = {food:'#E06050', sights:'#2A7D44', fine:'#7B5EA7', kids:'#E07020'};
+const gmapInstances = {}; // 탭별 지도 인스턴스 캐싱
 
-function buildStaticMapUrl(tab, items){
-  const geo = items.filter(p=>p.lat&&p.lon);
-  if(!geo.length) return '';
-  const color = PIN_COLORS_STATIC[tab]||'red';
-  const w = Math.min(window.innerWidth, 860);
-  const h = 280;
-  const scale = window.devicePixelRatio >= 2 ? 2 : 1;
+// Google Maps JS API 로드 (1회만)
+let gmapLoaded = false;
+let gmapCallbacks = [];
 
-  // 중심 좌표 계산
+function loadGmapScript(){
+  if(gmapLoaded) return Promise.resolve();
+  return new Promise((resolve)=>{
+    if(window.google?.maps){ gmapLoaded=true; resolve(); return; }
+    gmapCallbacks.push(resolve);
+    if(document.getElementById('gmapScript')) return;
+    window.__gmapReady = ()=>{
+      gmapLoaded=true;
+      gmapCallbacks.forEach(cb=>cb());
+      gmapCallbacks=[];
+    };
+    const s = document.createElement('script');
+    s.id = 'gmapScript';
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GMAP_KEY}&callback=__gmapReady&language=ko`;
+    s.async = true; s.defer = true;
+    document.head.appendChild(s);
+  });
+}
+
+async function renderMap(tab){
+  const data = S.places[tab]||[];
+  const geo = data.filter(p=>p.lat&&p.lon);
+  const containerId = 'jsMap-'+tab;
+  const hint = document.getElementById('mapHint-'+tab);
+
+  if(!geo.length){
+    document.getElementById(containerId).innerHTML = '<div style="padding:24px;text-align:center;color:#8295a7;font-size:12px">📍 좌표가 있는 장소가 없습니다</div>';
+    return;
+  }
+
+  await loadGmapScript();
+
+  const container = document.getElementById(containerId);
+
+  // 중심·줌 계산
   const avgLat = geo.reduce((s,p)=>s+Number(p.lat),0)/geo.length;
   const avgLon = geo.reduce((s,p)=>s+Number(p.lon),0)/geo.length;
-
-  // 줌 레벨 (범위에 따라)
-  const latDiff = Math.max(...geo.map(p=>p.lat)) - Math.min(...geo.map(p=>p.lat));
-  const lonDiff = Math.max(...geo.map(p=>p.lon)) - Math.min(...geo.map(p=>p.lon));
+  const latDiff = Math.max(...geo.map(p=>Number(p.lat))) - Math.min(...geo.map(p=>Number(p.lat)));
+  const lonDiff = Math.max(...geo.map(p=>Number(p.lon))) - Math.min(...geo.map(p=>Number(p.lon)));
   const spread = Math.max(latDiff, lonDiff);
-  const zoom = spread > 0.3 ? 10 : spread > 0.1 ? 11 : 12;
+  const zoom = spread > 0.4 ? 10 : spread > 0.15 ? 11 : 12;
 
-  // 마커 (번호 포함)
-  const markers = geo.map((p,i)=>
-    `markers=color:${color}%7Clabel:${i+1}%7C${p.lat},${p.lon}`
-  ).join('&');
-
-  return `https://maps.googleapis.com/maps/api/staticmap?center=${avgLat},${avgLon}&zoom=${zoom}&size=${Math.round(w/scale)}x${h}&scale=${scale}&maptype=roadmap&${markers}&key=${GMAP_KEY}`;
-}
-
-function renderMap(tab){
-  const data = S.places[tab]||[];
-  const wrap = document.getElementById('mapWrap-'+tab);
-  const hint = document.getElementById('mapHint-'+tab);
-  if(!wrap) return;
-
-  const geo = data.filter(p=>p.lat&&p.lon);
-  const svgEl = document.getElementById('svgMap-'+tab);
-
-  if(geo.length && GMAP_KEY){
-    // Google Static Maps — 여러 핀 이미지로 표시
-    wrap.classList.remove('use-svg');
-    const url = buildStaticMapUrl(tab, data);
-    svgEl.innerHTML = `
-      <div style="position:relative;width:100%;overflow:hidden;background:#e8f0f8">
-        <img src="${url}" alt="지도" style="width:100%;display:block;cursor:pointer"
-          onclick="openFullMap('${tab}')"
-          onerror="this.parentElement.innerHTML='<div style=padding:20px;text-align:center;color:#888>지도를 불러오는 중...</div>'">
-        <div style="position:absolute;bottom:6px;right:8px;background:rgba(255,255,255,.85);border-radius:6px;padding:3px 8px;font-size:10px;color:#333;font-weight:700">탭해서 구글맵 열기</div>
-      </div>`;
-    svgEl.style.display = 'block';
-    document.getElementById('gmap-'+tab).style.display = 'none';
-    hint.innerHTML = '📍 번호는 카드 순서 | 탭하면 구글맵에서 전체 보기 | 카드 📍지도 버튼 → 개별 구글맵';
+  // 기존 인스턴스 재사용 또는 새로 생성
+  let map = gmapInstances[tab];
+  if(!map){
+    map = new google.maps.Map(container, {
+      center:{lat:avgLat, lng:avgLon},
+      zoom,
+      mapTypeControl:false,
+      streetViewControl:false,
+      fullscreenControl:true,
+      zoomControl:true,
+      gestureHandling:'cooperative',
+      styles:[
+        {featureType:'poi',elementType:'labels',stylers:[{visibility:'off'}]},
+        {featureType:'transit',stylers:[{visibility:'off'}]}
+      ]
+    });
+    gmapInstances[tab] = map;
   } else {
-    // 폴백: SVG 커스텀 맵
-    wrap.classList.add('use-svg');
-    svgEl.innerHTML = buildSVG(tab, data);
-    hint.innerHTML = '📍 핀 탭 → 카드로 이동 | 카드 📍지도 → 구글맵 열기';
+    map.setCenter({lat:avgLat, lng:avgLon});
+    map.setZoom(zoom);
+    // 기존 마커 제거
+    if(map.__markers){ map.__markers.forEach(m=>m.setMap(null)); }
   }
+
+  // 인포윈도우 (공유)
+  const infoWindow = new google.maps.InfoWindow();
+  const color = PIN_COLORS_JS[tab]||'#E06050';
+  const markers = [];
+
+  geo.forEach((p, i)=>{
+    const marker = new google.maps.Marker({
+      position:{lat:Number(p.lat), lng:Number(p.lon)},
+      map,
+      title: p.name,
+      label:{
+        text: String(i+1),
+        color:'#fff',
+        fontSize:'11px',
+        fontWeight:'700'
+      },
+      icon:{
+        path: google.maps.SymbolPath.CIRCLE,
+        scale:14,
+        fillColor: color,
+        fillOpacity:1,
+        strokeColor:'#fff',
+        strokeWeight:2
+      }
+    });
+
+    marker.addListener('click', ()=>{
+      infoWindow.setContent(`
+        <div style="font-family:'Noto Sans KR',sans-serif;padding:4px;max-width:200px">
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px">${p.icon||'📍'} ${p.name}</div>
+          ${p.nameEn?`<div style="font-size:11px;color:#666;margin-bottom:4px;font-style:italic">${p.nameEn}</div>`:''}
+          ${p.price?`<span style="font-size:10px;background:#e6f4f6;color:#065F6A;padding:2px 6px;border-radius:4px;font-weight:700">${p.price}</span> `:''}
+          ${p.rating?`<span style="font-size:10px;color:#d97706;font-weight:700">★${Number(p.rating).toFixed(1)}</span>`:''}
+          ${p.addr?`<div style="font-size:10px;color:#888;margin-top:4px">${p.addr}</div>`:''}
+          ${p.mapUrl?`<a href="${p.mapUrl}" target="_blank" style="display:inline-block;margin-top:6px;font-size:11px;color:#0b7a86;font-weight:700;text-decoration:none">📍 구글맵에서 보기 →</a>`:''}
+        </div>`);
+      infoWindow.open(map, marker);
+      // 해당 카드 하이라이트
+      document.querySelectorAll(`#${tab}Grid .card`).forEach(c=>c.classList.remove('highlight'));
+      const card = document.getElementById('card-'+p.id);
+      if(card){card.classList.add('highlight');card.scrollIntoView({behavior:'smooth',block:'center'});}
+    });
+    markers.push(marker);
+  });
+  map.__markers = markers;
+
+  if(hint) hint.innerHTML = '📍 핀 탭 → 장소명·정보 표시 | 두 손가락으로 확대/축소 | 카드 📍지도 → 구글맵';
 }
 
-// 탭하면 구글맵 앱/웹으로 장소 전체 보기
-window.openFullMap = (tab) => {
-  const data = (S.places[tab]||[]).filter(p=>p.lat&&p.lon);
-  if(!data.length) return;
-  // 첫 번째 장소 기준으로 구글맵 검색 열기
-  const query = encodeURIComponent(data.map(p=>p.name).join(' OR '));
-  const avgLat = data.reduce((s,p)=>s+Number(p.lat),0)/data.length;
-  const avgLon = data.reduce((s,p)=>s+Number(p.lon),0)/data.length;
-  window.open(`https://www.google.com/maps/search/${query}/@${avgLat},${avgLon},12z`, '_blank');
-};
+// openFullMap 제거 (인터랙티브 지도로 대체됨)
 
 // ═══════════════════════════════════════════
 // RENDER PLACES
