@@ -756,22 +756,11 @@ function renderMap(tab){
   const wrap = document.getElementById('mapWrap-'+tab);
   const hint = document.getElementById('mapHint-'+tab);
   if(!wrap) return;
-  if(IS_LOCAL){
-    wrap.classList.add('use-svg');
-    document.getElementById('svgMap-'+tab).innerHTML = buildSVG(tab, data);
-    hint.innerHTML = '🗺️ 로컬 파일 환경 — SVG 지도 표시 중 | <strong>GitHub Pages 배포 후 구글맵으로 자동 전환됩니다</strong>';
-  } else {
-    wrap.classList.remove('use-svg');
-    const iframe = document.getElementById('gmap-'+tab);
-    if(!iframe.src || iframe.src===location.href){
-      const geo = data.filter(p=>p.lat&&p.lon);
-      if(geo.length){
-        const q = encodeURIComponent(geo.map(p=>p.nameEn||p.name).join('|'));
-        iframe.src = `https://maps.google.com/maps?q=${q}&t=m&z=${TAB_ZOOM[tab]||12}&output=embed&iwloc=near`;
-      }
-    }
-    hint.innerHTML = '📍 핀 탭 → 카드로 이동 | 카드 📍지도 → 구글맵 열기';
-  }
+
+  // 항상 SVG 커스텀 맵 사용 (모든 핀 표시)
+  wrap.classList.add('use-svg');
+  document.getElementById('svgMap-'+tab).innerHTML = buildSVG(tab, data);
+  hint.innerHTML = '📍 핀 탭 → 카드로 이동 | 카드 📍지도 버튼 → 구글맵 열기';
 }
 
 // ═══════════════════════════════════════════
