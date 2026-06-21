@@ -278,6 +278,32 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 .cat-식사{background:#fff3e0}.cat-교통{background:#e3f2fd}.cat-쇼핑{background:#f3e5f5}
 .cat-관광{background:#e8f5e9}.cat-숙소{background:#fce4ec}.cat-기타{background:#f0f4f8}
 
+/* ── MEAL PLAN ── */
+.mp-rate-banner{background:linear-gradient(135deg,#0d9488,#0891b2);color:#fff;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:16px;text-align:center}
+.mp-section-title{font-size:14px;font-weight:800;color:#0d9488;border-left:4px solid #0d9488;padding-left:10px;margin:20px 0 10px}
+.mp-costco-info{font-size:11px;color:#64748b;margin:-6px 0 10px 14px}
+.mp-card{background:#fff;border:1px solid #e6edf2;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px}
+.mp-card-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.mp-date{font-size:12px;font-weight:700;color:#334155}
+.mp-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px}
+.mp-badge.seafood{background:#e0f2fe;color:#0369a1}
+.mp-badge.fastfood{background:#fef9c3;color:#854d0e}
+.mp-badge.hawaiian{background:#f0fdf4;color:#15803d}
+.mp-badge.cajun{background:#fff7ed;color:#c2410c}
+.mp-restaurant{font-size:14px;font-weight:800;color:#1e293b;margin-bottom:2px}
+.mp-takeout{font-size:10px;background:#f1f5f9;color:#475569;padding:1px 7px;border-radius:999px;margin-left:6px;font-weight:600}
+.mp-info{font-size:11px;color:#64748b;margin-bottom:8px}
+.mp-table{width:100%;border-collapse:collapse;font-size:12px}
+.mp-table th{background:#f8fafc;color:#475569;padding:7px 8px;text-align:left;border-bottom:2px solid #e2e8f0;font-weight:700}
+.mp-table td{padding:6px 8px;border-bottom:1px solid #f1f5f9;color:#334155}
+.mp-num{text-align:right!important}
+.mp-total td{background:#f0fdf4;font-weight:700;color:#15803d;border-top:2px solid #bbf7d0}
+.mp-subtotal td{background:#e0f2fe;font-weight:700;color:#0369a1;border-top:2px solid #bae6fd}
+.mp-grandtotal td{background:#1e293b;color:#fff;font-weight:800;font-size:13px}
+.mp-tip{font-size:11px;color:#64748b;margin-top:8px;padding:6px 10px;background:#f8fafc;border-radius:8px;border-left:3px solid #cbd5e1}
+.mp-summary{background:#fff;border:2px solid #0d9488;border-radius:14px;padding:16px;margin-top:16px}
+.mp-summary-title{font-size:14px;font-weight:800;color:#0d9488;margin-bottom:10px;text-align:center}
+
 .footer{padding:18px;text-align:center;font-size:11px;color:var(--ink-3)}
 @media(max-width:480px){.grid{grid-template-columns:1fr}.frow{grid-template-columns:1fr}}
 </style>
@@ -300,6 +326,7 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
     <button class="tab" data-tab="ledger">📒 가계부</button>
     <button class="tab" data-tab="checklist">🧳 준비물</button>
     <button class="tab" data-tab="budget">💰 예산</button>
+    <button class="tab" data-tab="mealplan">🍽️ 식비계획</button>
     <button class="tab" data-tab="memo">📝 메모</button>
     <button class="tab" data-tab="reserve">📋 예약/보험</button>
     <button class="tab" data-tab="food">🍜 맛집</button>
@@ -424,6 +451,190 @@ html,body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--paper
 
     <!-- 아이템 목록 -->
     <div id="clList"></div>
+  </section>
+
+  <!-- MEAL PLAN -->
+  <section id="pane-mealplan" class="section">
+    <div class="pane-title">🍽️ 식비계획</div>
+    <div class="pane-sub">외식 4끼 + 코스트코 장보기 · 성인 5명 + 40개월 유아 + 돌아기</div>
+
+    <div class="mp-rate-banner">💱 적용 환율: <strong>$1 = ₩1,560</strong> &nbsp;|&nbsp; 2026년 7월 여행 기준 예상 환율</div>
+
+    <div class="mp-section-title">🍴 외식 일정 (4끼)</div>
+
+    <div class="mp-card">
+      <div class="mp-card-header">
+        <span class="mp-date">7월 4일 (토) 저녁</span>
+        <span class="mp-badge seafood">해산물</span>
+      </div>
+      <div class="mp-restaurant">🦞 Fook Yuen Seafood Restaurant</div>
+      <div class="mp-info">구글맵 4.0⭐ · $20~80/인 · 오후 10시까지</div>
+      <table class="mp-table">
+        <thead><tr><th>메뉴</th><th class="mp-num">가격</th></tr></thead>
+        <tbody>
+          <tr><td>Live Lobster with Ginger &amp; Scallion × 2마리</td><td class="mp-num">~$50</td></tr>
+          <tr><td>Honey Walnut Shrimp</td><td class="mp-num">~$25</td></tr>
+          <tr><td>Sizzling Tenderloin Beef</td><td class="mp-num">~$28</td></tr>
+          <tr><td>Seafood &amp; Tofu Soup</td><td class="mp-num">~$20</td></tr>
+          <tr><td>Shrimp Egg Fried Rice</td><td class="mp-num">~$18</td></tr>
+          <tr><td>Almond Tofu Dessert</td><td class="mp-num">~$10</td></tr>
+          <tr class="mp-total"><td>소계 (팁 20% 포함)</td><td class="mp-num"><strong>~$181 / 약 28만원</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="mp-tip">⚠️ 랍스터는 반드시 엔트리 추가 주문 조건 확인 · 예약 권장</div>
+    </div>
+
+    <div class="mp-card">
+      <div class="mp-card-header">
+        <span class="mp-date">7월 5일 (일) 점심</span>
+        <span class="mp-badge fastfood">패스트푸드</span>
+      </div>
+      <div class="mp-restaurant">🐔 Chick-fil-A <span class="mp-takeout">테이크아웃</span></div>
+      <div class="mp-info">구글맵 4.1⭐ · $10~20/인 · 드라이브스루 전용</div>
+      <table class="mp-table">
+        <thead><tr><th>메뉴</th><th>수량</th><th class="mp-num">가격</th></tr></thead>
+        <tbody>
+          <tr><td>Spicy Deluxe Sandwich</td><td>4개</td><td class="mp-num">~$32</td></tr>
+          <tr><td>Nuggets 12pc</td><td>1팩</td><td class="mp-num">~$8</td></tr>
+          <tr><td>Waffle Fries</td><td>5개</td><td class="mp-num">~$22</td></tr>
+          <tr><td>Kids Meal (유아)</td><td>1개</td><td class="mp-num">~$7</td></tr>
+          <tr><td>Lemonade</td><td>5잔</td><td class="mp-num">~$18</td></tr>
+          <tr class="mp-total"><td colspan="2">소계</td><td class="mp-num"><strong>~$87 / 약 14만원</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="mp-tip">💡 알라모아나 비치파크 피크닉 추천</div>
+    </div>
+
+    <div class="mp-card">
+      <div class="mp-card-header">
+        <span class="mp-date">7월 7일 (화) 오후 5시</span>
+        <span class="mp-badge hawaiian">하와이안</span>
+      </div>
+      <div class="mp-restaurant">🌅 Monkeypod Kitchen – Waikiki</div>
+      <div class="mp-info">구글맵 4.3⭐ · $20~70/인 · 오션뷰 + 라이브뮤직 · 예약 필수</div>
+      <table class="mp-table">
+        <thead><tr><th>메뉴</th><th class="mp-num">가격</th></tr></thead>
+        <tbody>
+          <tr><td>Monkeypod Mai Tai × 4잔</td><td class="mp-num">~$65</td></tr>
+          <tr><td>Poke Tacos (애피타이저)</td><td class="mp-num">~$20</td></tr>
+          <tr><td>Kalua Pig &amp; Pineapple Pizza × 2판</td><td class="mp-num">~$58</td></tr>
+          <tr><td>Macadamia Nut Crusted Fish</td><td class="mp-num">~$42</td></tr>
+          <tr><td>Big Island Cheeseburger (아이용)</td><td class="mp-num">~$20</td></tr>
+          <tr><td>Banana Cream Pie</td><td class="mp-num">~$14</td></tr>
+          <tr class="mp-total"><td>소계 (팁+서비스차지 포함)</td><td class="mp-num"><strong>~$280 / 약 44만원</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="mp-tip">⚠️ 6인 이상 자동 그라투이티 20% + 푸드 4% 서비스차지</div>
+    </div>
+
+    <div class="mp-card">
+      <div class="mp-card-header">
+        <span class="mp-date">7월 8일 (수) 저녁</span>
+        <span class="mp-badge cajun">케이준</span>
+      </div>
+      <div class="mp-restaurant">🦀 Kickin Kajun Honolulu <span class="mp-takeout">테이크아웃</span></div>
+      <div class="mp-info">구글맵 4.3⭐ · $50~100/인 · 하와이 최초 케이준 씨푸드</div>
+      <table class="mp-table">
+        <thead><tr><th>메뉴</th><th class="mp-num">가격</th></tr></thead>
+        <tbody>
+          <tr><td>빅 콤보 (Dungeness Crab + Lobster + Snow Crab + Shrimp + Clams 등 6lbs)</td><td class="mp-num">~$170</td></tr>
+          <tr><td>추가 Shrimp 1lb</td><td class="mp-num">~$28</td></tr>
+          <tr><td>Cajun Fried Wings</td><td class="mp-num">~$18</td></tr>
+          <tr><td>밥 추가 × 5</td><td class="mp-num">~$15</td></tr>
+          <tr class="mp-total"><td>소계</td><td class="mp-num"><strong>~$231 / 약 36만원</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="mp-tip">💡 소스: Kickin' Sauce(시그니처) + 버터마늘 · 일회용 장갑 코스트코에서 미리 구매</div>
+    </div>
+
+    <div class="mp-section-title">🛒 코스트코 장보기 (7박 기준)</div>
+    <div class="mp-costco-info">아침 7끼 + 점심 3끼 식재료 · 돌아기 베이비푸드 포함</div>
+
+    <div class="mp-card">
+      <div class="mp-card-header"><span class="mp-date">🍳 아침 7끼 식재료</span></div>
+      <table class="mp-table">
+        <thead><tr><th>품목</th><th>수량</th><th class="mp-num">가격</th></tr></thead>
+        <tbody>
+          <tr><td>대용량 달걀 (36개입)</td><td>1팩</td><td class="mp-num">~$9</td></tr>
+          <tr><td>베이컨</td><td>1팩</td><td class="mp-num">~$15</td></tr>
+          <tr><td>식빵 (대용량)</td><td>1개</td><td class="mp-num">~$7</td></tr>
+          <tr><td>버터</td><td>1개</td><td class="mp-num">~$8</td></tr>
+          <tr><td>시리얼 (아이용 포함)</td><td>2개</td><td class="mp-num">~$12</td></tr>
+          <tr><td>우유 (대용량)</td><td>1개</td><td class="mp-num">~$8</td></tr>
+          <tr><td>오렌지주스</td><td>1개</td><td class="mp-num">~$8</td></tr>
+          <tr><td>과일 (딸기/수박/포도 등)</td><td>2~3종</td><td class="mp-num">~$25</td></tr>
+          <tr><td>그릭요거트</td><td>1팩</td><td class="mp-num">~$10</td></tr>
+          <tr><td>머핀/크로아상 (베이커리)</td><td>1박스</td><td class="mp-num">~$12</td></tr>
+          <tr class="mp-total"><td colspan="2">소계</td><td class="mp-num"><strong>~$114</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mp-card">
+      <div class="mp-card-header"><span class="mp-date">🥪 점심 3끼 식재료</span></div>
+      <table class="mp-table">
+        <thead><tr><th>품목</th><th>수량</th><th class="mp-num">가격</th></tr></thead>
+        <tbody>
+          <tr><td>로티세리 치킨</td><td>2마리</td><td class="mp-num">~$16</td></tr>
+          <tr><td>샌드위치 재료 (햄·치즈·양상추)</td><td>세트</td><td class="mp-num">~$20</td></tr>
+          <tr><td>또띠야</td><td>1팩</td><td class="mp-num">~$6</td></tr>
+          <tr><td>과일 컵 / 샐러드</td><td>2~3팩</td><td class="mp-num">~$18</td></tr>
+          <tr><td>스낵 (크래커·견과류)</td><td>2~3종</td><td class="mp-num">~$20</td></tr>
+          <tr><td>코스트코 피자 (푸드코트)</td><td>옵션</td><td class="mp-num">~$20</td></tr>
+          <tr class="mp-total"><td colspan="2">소계</td><td class="mp-num"><strong>~$100</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mp-card">
+      <div class="mp-card-header"><span class="mp-date">👶 돌아기 베이비푸드</span></div>
+      <table class="mp-table">
+        <thead><tr><th>품목</th><th>수량</th><th class="mp-num">가격</th></tr></thead>
+        <tbody>
+          <tr><td>Gerber 퓨레 파우치 (과일·야채)</td><td>20~24개입</td><td class="mp-num">~$20</td></tr>
+          <tr><td>Gerber 곡물 시리얼</td><td>1통</td><td class="mp-num">~$8</td></tr>
+          <tr><td>Happy Baby 유기농 스낵</td><td>1~2박스</td><td class="mp-num">~$12</td></tr>
+          <tr><td>아기 음료/주스 파우치</td><td>1박스</td><td class="mp-num">~$10</td></tr>
+          <tr class="mp-total"><td colspan="2">소계</td><td class="mp-num"><strong>~$50</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mp-card">
+      <div class="mp-card-header"><span class="mp-date">🧴 공통 소모품</span></div>
+      <table class="mp-table">
+        <thead><tr><th>품목</th><th class="mp-num">가격</th></tr></thead>
+        <tbody>
+          <tr><td>생수 (40병 대용량팩)</td><td class="mp-num">~$10</td></tr>
+          <tr><td>음료 (스포츠드링크·탄산수)</td><td class="mp-num">~$15</td></tr>
+          <tr><td>일회용 장갑 (키킨케이준 테이크아웃용)</td><td class="mp-num">~$8</td></tr>
+          <tr><td>지퍼백·랩·일회용 접시</td><td class="mp-num">~$12</td></tr>
+          <tr><td>선크림 (대용량)</td><td class="mp-num">~$18</td></tr>
+          <tr class="mp-total"><td>소계</td><td class="mp-num"><strong>~$63</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mp-summary">
+      <div class="mp-summary-title">💰 식비 총 예산 요약</div>
+      <table class="mp-table">
+        <thead><tr><th>구분</th><th>항목</th><th class="mp-num">달러</th><th class="mp-num">한화 (×1,560)</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="4">외식</td><td>7/4 Fook Yuen (저녁)</td><td class="mp-num">~$181</td><td class="mp-num">약 28만원</td></tr>
+          <tr><td>7/5 Chick-fil-A (점심)</td><td class="mp-num">~$87</td><td class="mp-num">약 14만원</td></tr>
+          <tr><td>7/7 Monkeypod Kitchen (저녁)</td><td class="mp-num">~$280</td><td class="mp-num">약 44만원</td></tr>
+          <tr><td>7/8 Kickin Kajun (저녁)</td><td class="mp-num">~$231</td><td class="mp-num">약 36만원</td></tr>
+          <tr class="mp-subtotal"><td colspan="2"><strong>외식 소계</strong></td><td class="mp-num"><strong>~$779</strong></td><td class="mp-num"><strong>약 122만원</strong></td></tr>
+          <tr><td rowspan="4">코스트코</td><td>아침 7끼 식재료</td><td class="mp-num">~$114</td><td class="mp-num">약 18만원</td></tr>
+          <tr><td>점심 3끼 식재료</td><td class="mp-num">~$100</td><td class="mp-num">약 16만원</td></tr>
+          <tr><td>돌아기 베이비푸드</td><td class="mp-num">~$50</td><td class="mp-num">약 8만원</td></tr>
+          <tr><td>공통 소모품</td><td class="mp-num">~$63</td><td class="mp-num">약 10만원</td></tr>
+          <tr class="mp-subtotal"><td colspan="2"><strong>코스트코 소계</strong></td><td class="mp-num"><strong>~$327</strong></td><td class="mp-num"><strong>약 51만원</strong></td></tr>
+          <tr class="mp-grandtotal"><td colspan="2"><strong>🧾 총 식비 합계</strong></td><td class="mp-num"><strong>~$1,106</strong></td><td class="mp-num"><strong>약 173만원</strong></td></tr>
+          <tr class="mp-grandtotal"><td colspan="2"><strong>🔒 여유분 10% 포함</strong></td><td class="mp-num"><strong>~$1,217</strong></td><td class="mp-num"><strong>약 190만원</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <!-- LEDGER -->
