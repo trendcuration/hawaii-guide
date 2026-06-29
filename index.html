@@ -727,17 +727,17 @@ const DEF_SCHEDULE = [
   {id:'ds8',day:'7/10(금)',date:'2026-07-10',label:'귀국',items:[['체크아웃',''],['11~14시 출국 수속','12:00 렌터카 반납'],['14:30 HNL 출발 YP152',''],['','']]},
 ];
 const DEF_BUDGET = [
-  {id:'b1',name:'렌터카',amount:1502910,currency:'KRW',method:'카드',memo:'예약 #69043973'},
-  {id:'b2',name:'스냅',amount:555000,currency:'KRW',method:'현금',memo:''},
-  {id:'b3',name:'스냅 팁',amount:45000,currency:'KRW',method:'현금',memo:''},
-  {id:'b4',name:'숙소',amount:7944000,currency:'KRW',method:'현금',memo:'디파짓 240만 포함'},
-  {id:'b5',name:'코스트코',amount:750000,currency:'KRW',method:'카드',memo:'일 $100 × 5일'},
-  {id:'b6',name:'주유비',amount:105000,currency:'KRW',method:'카드',memo:'250마일 기준'},
-  {id:'b7',name:'외식',amount:1350000,currency:'KRW',method:'카드',memo:'3회 × $50 × 성인 6'},
-  {id:'b8',name:'외식 팁',amount:243000,currency:'KRW',method:'카드',memo:'18%'},
-  {id:'b9',name:'돌잔치',amount:1200000,currency:'KRW',method:'카드',memo:'룸 미니멈 차지'},
-  {id:'b10',name:'돌잔치 팁',amount:300000,currency:'KRW',method:'카드',memo:'25%'},
-  {id:'b11',name:'버스',amount:180000,currency:'KRW',method:'카드',memo:'3일권 $20 × 성인 6명'},
+  {id:'b1',name:'렌터카',amount_usd:1036,currency:'USD',method:'카드',memo:'예약 #69043973'},
+  {id:'b2',name:'스냅',amount_usd:400,currency:'USD',method:'현금',memo:''},
+  {id:'b3',name:'스냅 팁',amount_usd:30,currency:'USD',method:'현금',memo:''},
+  {id:'b4',name:'숙소',amount_usd:5400,currency:'USD',method:'현금',memo:'디파짓 $1,650 포함'},
+  {id:'b5',name:'코스트코',amount_usd:500,currency:'USD',method:'카드',memo:'일 $100 × 5일'},
+  {id:'b6',name:'주유비',amount_usd:75,currency:'USD',method:'카드',memo:'250마일 기준'},
+  {id:'b7',name:'외식',amount_usd:900,currency:'USD',method:'카드',memo:'Fook Yuen / Monkeypod / Kickin Kajun'},
+  {id:'b8',name:'외식 팁',amount_usd:162,currency:'USD',method:'카드',memo:'18%'},
+  {id:'b9',name:'돌잔치',amount_usd:800,currency:'USD',method:'카드',memo:'룸 미니멈 차지'},
+  {id:'b10',name:'돌잔치 팁',amount_usd:200,currency:'USD',method:'카드',memo:'25%'},
+  {id:'b11',name:'버스',amount_usd:120,currency:'USD',method:'카드',memo:'3일권 $20 × 성인 6명'},
 ];
 const DEF_MEMOS = [
   {id:'m1',text:'✅ 예약 완료: 렌터카 #69043973, 스냅 7/5 9시'},
@@ -1224,17 +1224,22 @@ const usdToKrw = usd => Math.round(Number(usd) * FX.rate);
 function renderBudget(){
   const card = document.getElementById('budgetCard');
   const items = S.budget||[];
-  const totalKRW = items.reduce((s,i)=>s+(Number(i.amount)||0), 0);
-  const totalUSD = krwToUsd(totalKRW);
+
+  // USD 기준으로 합산 (amount_usd 우선, 없으면 amount/rate)
+  const getUSD = i => Number(i.amount_usd) || krwToUsd(Number(i.amount)||0);
+  const getKRW = i => Number(i.amount_usd) ? usdToKrw(Number(i.amount_usd)) : (Number(i.amount)||0);
+
+  const totalUSD = items.reduce((s,i)=>s+getUSD(i), 0);
+  const totalKRW = usdToKrw(totalUSD);
 
   card.innerHTML = `
     <div class="budget-top">
       <div>
         <div class="lbl">총 예산</div>
-        <div class="amt">${fmtKRW(totalKRW)}원</div>
+        <div class="amt">$${fmtUSD(totalUSD)}</div>
         <div class="sub" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:3px">
-          <span>≈ $${fmtUSD(totalUSD)}</span>
-          <span>인당 약 ${fmtKRW(Math.round(totalKRW/3))}원 (3가정)</span>
+          <span>≈ ${fmtKRW(totalKRW)}원</span>
+          <span>인당 약 $${fmtUSD(totalUSD/3)} (3가정)</span>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
@@ -1245,11 +1250,8 @@ function renderBudget(){
 
     <div class="bgt-list" id="bgtList">
       ${items.map(i=>{
-        const isUSD = i.currency === 'USD';
-        const krw = Number(i.amount)||0;
-        const usd = krwToUsd(krw);
-        const dispAmt = isUSD ? '$'+fmtUSD(usd) : fmtKRW(krw)+'원';
-        const subAmt  = isUSD ? fmtKRW(krw)+'원' : '$'+fmtUSD(usd);
+        const usd = getUSD(i);
+        const krw = usdToKrw(usd);
         return `<div class="bgt-item" data-id="${esc(i.id)}">
           <div class="bgt-item-left">
             <div class="bgt-item-name">
@@ -1262,14 +1264,14 @@ function renderBudget(){
           </div>
           <div class="bgt-item-right">
             <div class="bgt-item-amount">
-              <input class="bgt-inp bgt-amt-inp" data-f="amt_display"
-                value="${esc(isUSD ? fmtUSD(usd) : fmtKRW(krw))}"
+              <input class="bgt-inp bgt-amt-inp" data-f="amt_usd"
+                value="${fmtUSD(usd)}"
                 inputmode="decimal"
-                onfocus="this.value=this.value.replace(/[,$₩ ]/g,'')"
+                onfocus="this.value=this.value.replace(/[,$]/g,'')"
                 onblur="onBudgetAmtBlur(this)">
-              <button class="cur-toggle ${isUSD?'usd':''}" data-id="${esc(i.id)}">${isUSD?'USD':'KRW'}</button>
+              <span style="font-size:11px;font-weight:700;color:var(--ink-3)">$</span>
             </div>
-            <div class="bgt-item-sub">${subAmt}</div>
+            <div class="bgt-item-sub">≈ ${fmtKRW(krw)}원</div>
             <button class="bgt-del-btn" data-del="${esc(i.id)}">삭제</button>
           </div>
         </div>`;
@@ -1279,13 +1281,12 @@ function renderBudget(){
     <div class="bgt-footer">
       <span>합계</span>
       <div>
-        <div class="bgt-total-krw">${fmtKRW(totalKRW)}원</div>
-        <div class="bgt-total-usd">≈ $${fmtUSD(totalUSD)}</div>
+        <div class="bgt-total-krw">$${fmtUSD(totalUSD)}</div>
+        <div class="bgt-total-usd">≈ ${fmtKRW(totalKRW)}원</div>
       </div>
     </div>`;
 
   card.querySelectorAll('.bgt-inp:not(.bgt-amt-inp)').forEach(inp=>inp.addEventListener('change',e=>onBudgetTextField(e.target)));
-  card.querySelectorAll('.cur-toggle').forEach(btn=>btn.addEventListener('click',()=>toggleCurrency(btn.dataset.id)));
   card.querySelector('#btnAddBudget').addEventListener('click',openBudgetModal);
   card.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteBudget(b.dataset.del)));
 }
@@ -1297,23 +1298,33 @@ async function onBudgetAmtBlur(inp){
   const item = S.budget.find(i=>String(i.id)===String(id));
   if(!item) return;
   const raw = parseNum(inp.value);
-  if(isNaN(raw)) return;
-  const isUSD = item.currency === 'USD';
-  item.amount = isUSD ? usdToKrw(raw) : raw;
-  inp.value = isUSD ? fmtUSD(raw) : fmtKRW(raw);
-  // 환산액 업데이트
+  if(isNaN(raw)||raw<0) return;
+
+  // USD가 기준 — 그대로 저장
+  item.amount_usd = raw;
+  item.amount = usdToKrw(raw); // 호환성 유지
+
+  inp.value = fmtUSD(raw);
+
+  // 원화 환산 업데이트
   const subEl = item_el.querySelector('.bgt-item-sub');
-  if(subEl) subEl.textContent = isUSD ? fmtKRW(item.amount)+'원' : '$'+fmtUSD(krwToUsd(item.amount));
+  if(subEl) subEl.textContent = '≈ '+fmtKRW(usdToKrw(raw))+'원';
+
   setStatus('저장 중...','spin');
-  const {ok} = await api('budget?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({amount:item.amount,currency:item.currency||'KRW'})});
+  const {ok} = await api('budget?id=eq.'+encodeURIComponent(id),{
+    method:'PATCH',
+    body:JSON.stringify({amount_usd: raw, amount: item.amount, currency:'USD'})
+  });
+
   // 합계 업데이트
-  const totalKRW = S.budget.reduce((s,x)=>s+(Number(x.amount)||0),0);
+  const getUSD = i => Number(i.amount_usd)||krwToUsd(Number(i.amount)||0);
+  const totalUSD = S.budget.reduce((s,i)=>s+getUSD(i),0);
   const totalKrwEl = document.querySelector('.bgt-total-krw');
   const totalUsdEl = document.querySelector('.bgt-total-usd');
   const amtEl = document.querySelector('.budget-top .amt');
-  if(totalKrwEl) totalKrwEl.textContent = fmtKRW(totalKRW)+'원';
-  if(totalUsdEl) totalUsdEl.textContent = '≈ $'+fmtUSD(krwToUsd(totalKRW));
-  if(amtEl) amtEl.textContent = fmtKRW(totalKRW)+'원';
+  if(totalKrwEl) totalKrwEl.textContent = '$'+fmtUSD(totalUSD);
+  if(totalUsdEl) totalUsdEl.textContent = '≈ '+fmtKRW(usdToKrw(totalUSD))+'원';
+  if(amtEl) amtEl.textContent = '$'+fmtUSD(totalUSD);
   setStatus(ok?'💾 저장됨':'❌ 저장 실패',ok?'ok':'err');
 }
 // make it globally callable (inline onblur)
@@ -1343,17 +1354,10 @@ async function toggleCurrency(id){
 function openBudgetModal(){
   openModal('예산 항목 추가',`
     <div class="fg"><label class="fl">항목명 *</label><input class="fi" id="b_name"></div>
-    <div style="margin-bottom:10px">
-      <label class="fl">통화 선택</label>
-      <div style="display:flex;gap:8px">
-        <button type="button" class="cur-btn on" id="bCurKRW" onclick="setBudgetCur('KRW')">🇰🇷 원화 (KRW)</button>
-        <button type="button" class="cur-btn" id="bCurUSD" onclick="setBudgetCur('USD')">🇺🇸 달러 (USD)</button>
-      </div>
-    </div>
     <div class="fg">
-      <label class="fl" id="b_amt_lbl">금액 (원)</label>
-      <input class="fi" id="b_amount" type="text" inputmode="decimal" placeholder="0">
-      <div id="b_convert" style="font-size:11px;color:#0b7a86;margin-top:4px;min-height:16px"></div>
+      <label class="fl">금액 ($USD) *</label>
+      <input class="fi" id="b_amount" type="text" inputmode="decimal" placeholder="0.00">
+      <div id="b_convert" style="font-size:11px;color:var(--teal-d);margin-top:4px;min-height:16px"></div>
     </div>
     <div class="frow">
       <div class="fg"><label class="fl">지불수단</label><input class="fi" id="b_method" value="카드"></div>
@@ -1361,33 +1365,21 @@ function openBudgetModal(){
     </div>`,
     `<button class="btn-s" onclick="closeModal()">취소</button><button class="btn-p" id="btnSaveModal">저장</button>`);
 
-  let modalCur = 'KRW';
-  window.setBudgetCur = (cur) => {
-    modalCur = cur;
-    document.getElementById('bCurKRW').classList.toggle('on', cur==='KRW');
-    document.getElementById('bCurUSD').classList.toggle('on', cur==='USD');
-    document.getElementById('b_amt_lbl').textContent = cur==='KRW' ? '금액 (원)' : '금액 ($)';
-    document.getElementById('b_amount').placeholder = cur==='KRW' ? '0' : '0.00';
-    updateModalConvert();
-  };
-  function updateModalConvert(){
-    const raw = parseNum(document.getElementById('b_amount').value);
-    const el = document.getElementById('b_convert');
-    if(!raw){el.textContent='';return;}
-    if(modalCur==='USD'){ el.textContent=`→ 약 ${fmtKRW(usdToKrw(raw))}원 (환율 ₩${fmtKRW(FX.rate)}/1$)`; }
-    else { el.textContent=`→ 약 $${fmtUSD(krwToUsd(raw))}`; }
-  }
-  document.getElementById('b_amount').addEventListener('input', updateModalConvert);
+  document.getElementById('b_amount').addEventListener('input', ()=>{
+    const v = parseNum(document.getElementById('b_amount').value);
+    document.getElementById('b_convert').textContent = v ? `≈ ${fmtKRW(usdToKrw(v))}원 (환율 ₩${fmtKRW(FX.rate)}/$1)` : '';
+  });
 
   document.getElementById('btnSaveModal').onclick = async()=>{
     const name = document.getElementById('b_name').value.trim();
     if(!name){alert('항목명을 입력하세요');return;}
-    const raw = parseNum(document.getElementById('b_amount').value);
-    const amountKRW = modalCur==='USD' ? usdToKrw(raw) : raw;
+    const usd = parseNum(document.getElementById('b_amount').value);
+    if(!usd){alert('금액을 입력하세요');return;}
     const payload = {
-      id:uuid(), name,
-      amount: amountKRW,
-      currency: modalCur,
+      id: uuid(), name,
+      amount_usd: usd,
+      amount: usdToKrw(usd),
+      currency: 'USD',
       method: document.getElementById('b_method').value.trim(),
       memo: document.getElementById('b_memo').value.trim()
     };
