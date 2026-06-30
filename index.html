@@ -1353,7 +1353,7 @@ async function onBudgetAmtBlur(inp){
   setStatus('저장 중...','spin');
   const savePromise = api('budget?id=eq.'+encodeURIComponent(id),{
     method:'PATCH',
-    body:JSON.stringify({amount_usd: raw, amount: item.amount, currency:'USD'})
+    body:JSON.stringify({amount: usdToKrw(raw), currency:'USD'})
   });
   pendingSave = savePromise;
   const {ok} = await savePromise;
@@ -1378,7 +1378,9 @@ async function onBudgetTextField(inp){
   if(!item) return;
   item[inp.dataset.f] = inp.value;
   setStatus('저장 중...','spin');
-  const savePromise = api('budget?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(item)});
+  // amount_usd는 DB 컬럼이 없으므로 제외
+  const {amount_usd:_, ...cleanItem} = item;
+  const savePromise = api('budget?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(cleanItem)});
   pendingSave = savePromise;
   const {ok} = await savePromise;
   setStatus(ok?'💾 저장됨':'❌ 저장 실패',ok?'ok':'err');
@@ -1421,7 +1423,6 @@ function openBudgetModal(){
     if(!usd){alert('금액을 입력하세요');return;}
     const payload = {
       id: uuid(), name,
-      amount_usd: usd,
       amount: usdToKrw(usd),
       currency: 'USD',
       method: document.getElementById('b_method').value.trim(),
