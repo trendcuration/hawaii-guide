@@ -1531,7 +1531,7 @@ async function onBudgetAmtBlur(inp){
 window.onBudgetAmtBlur = onBudgetAmtBlur;
 
 async function onBudgetTextField(inp){
-  const id = inp.closest('tr')?.dataset?.id;
+  const id = inp.closest('.bgt-item')?.dataset?.id;
   const item = S.budget.find(i=>String(i.id)===String(id));
   if(!item) return;
   item[inp.dataset.f] = inp.value;
